@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Raleway:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Space+Grotesk:wght@500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>
   /* =========================================================
-     Tokens base (los sobrescribe JS según la selección)
+    Tokens base (los sobrescribe JS según la selección)
      ========================================================= */
   :root{
     --bg:#0b0c09; --surface:#15160f; --surface-2:#1e1f17;
@@ -481,9 +481,43 @@
     padding:10px 16px; border-radius:999px; opacity:0; pointer-events:none; transition:all .25s; z-index:60;
   }
   .toast.show{opacity:1; transform:translate(-50%,0);}
+
+  /* =========================================================
+     Fondos de página (igual que en la app: Panel → Ajustes)
+     ========================================================= */
+  :root{ --softgrid-op:.22; }
+  html[data-mode="light"]{ --softgrid-op:.3; }
+  .bg-dotgrid, .bg-softgrid{isolation:isolate;}
+  .bg-dotgrid::before, .bg-softgrid::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;}
+  .bg-dotgrid{--cell:80px;}
+  .bg-dotgrid::before{
+    color:color-mix(in oklch, var(--text), transparent 90%);
+    background-image:
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px),
+      radial-gradient(circle, currentColor 2px, transparent 2px);
+    background-size:var(--cell) var(--cell);
+    background-position:0 0, 0 0, calc(var(--cell) / -2 + .5px) calc(var(--cell) / -2 + .5px);
+    -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+            mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+  }
+  .bg-softgrid::before{
+    background-image:
+      linear-gradient(to right, var(--text) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--text) 1px, transparent 1px);
+    background-size:40px 40px; background-position:center top;
+    opacity:var(--softgrid-op);
+    -webkit-mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+            mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+  }
+  .page-backdrop{position:fixed; inset:0; z-index:-1; pointer-events:none;}
+  .bg-box{position:relative; height:120px; border-radius:12px; background:var(--bg); border:1px solid var(--line); overflow:hidden; --cell:40px;}
+  .app-main{position:relative; padding-top:1px;}
+  .bg-note{font-size:13px; color:var(--text-soft); margin:14px 0 0;}
 </style>
 </head>
 <body>
+<div class="page-backdrop" data-bg aria-hidden="true"></div>
 
 <!-- ================= TOPBAR ================= -->
 <header class="topbar">
@@ -682,6 +716,10 @@
         <div class="divider-demo" data-pattern></div>
         <div class="cap"><b>Divisor</b><span>entre secciones · 16–24px de alto</span></div>
       </div>
+
+      <div class="sub-head"><h3>Fondo de página</h3><span id="bgName"></span></div>
+      <div class="opt-grid five" role="radiogroup" aria-label="Fondo de página" data-group="bg"></div>
+      <p class="bg-note">La versión más callada del patrón, fija detrás del sitio público (portada, login, registro). Nunca en la lectura de un post. En la app se elige en <b>Panel → Ajustes</b>; aquí se aplica a esta página y a la vista previa.</p>
     </div>
   </section>
 
@@ -710,6 +748,7 @@
               <span class="btn">Leer artículo</span>
             </div>
           </div>
+          <div class="app-main" data-bg>
           <div class="app-tools">
             <div class="input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar posts…</div>
             <span class="chipf on">Todos</span><span class="chipf">Backend</span><span class="chipf">Frontend</span>
@@ -742,6 +781,7 @@
                 <div class="post-meta"><span class="avatar"></span>18 SEP · 5 MIN</div>
               </div>
             </article>
+          </div>
           </div>
         </div>
 
@@ -1009,9 +1049,19 @@
      desc:"El eco circular de una página al doblarse. Casi textura."}
   ];
 
-  var DEFAULTS = {logo:"hilo", color:"lima", type:"inter", pattern:"ruled"};
+  // Fondos de página: los mismos que ofrece la app en Panel → Ajustes
+  var BACKGROUNDS = [
+    {id:"dotgrid",  name:"Cuadrícula con puntos", tag:"Predeterminado",
+     desc:"Líneas finas con un punto en cada intersección, en toda la pantalla."},
+    {id:"softgrid", name:"Cuadrícula suave",      tag:"",
+     desc:"Cuadrícula fina anclada arriba que se desvanece hacia los bordes."},
+    {id:"none",     name:"Sin patrón",            tag:"",
+     desc:"Fondo liso."}
+  ];
+
+  var DEFAULTS = {logo:"hilo", color:"lima", type:"inter", pattern:"ruled", bg:"dotgrid"};
   var KEY = "blog-concept-v3";
-  var state = {logo:DEFAULTS.logo, color:DEFAULTS.color, type:DEFAULTS.type, pattern:DEFAULTS.pattern, mode:null};
+  var state = {logo:DEFAULTS.logo, color:DEFAULTS.color, type:DEFAULTS.type, pattern:DEFAULTS.pattern, bg:DEFAULTS.bg, mode:null};
 
   function find(list, id){ for(var i=0;i<list.length;i++){ if(list[i].id===id) return list[i]; } return list[0]; }
   function $(s, r){ return (r||document).querySelector(s); }
@@ -1105,6 +1155,14 @@
     }).join("");
   }
 
+  function renderBgCards(){
+    $('[data-group="bg"]').innerHTML = BACKGROUNDS.map(function(b){
+      return '<button class="opt" type="button" role="radio" data-id="'+b.id+'">'+ head(b) +
+        '<div class="bg-box bg-'+b.id+'"></div>'+
+        '<div class="opt-foot"><span class="tag">Fondo del sitio</span>'+pill(b.tag)+'</div></button>';
+    }).join("");
+  }
+
   /* ======================== APLICAR SELECCIÓN ======================== */
   function applyAll(changed){
     var root = document.documentElement;
@@ -1126,7 +1184,7 @@
     meta.content = vars["--bg"];
 
     // radios
-    ["logo","color","type","pattern"].forEach(function(g){
+    ["logo","color","type","pattern","bg"].forEach(function(g){
       $$('[data-group="'+g+'"] .opt').forEach(function(b){
         var on = b.getAttribute("data-id") === state[g];
         b.setAttribute("aria-checked", on ? "true" : "false");
@@ -1150,9 +1208,16 @@
       el.classList.add("pat-"+state.pattern);
     });
 
+    // fondo de página en vivo (documento + vista previa de portada)
+    $$("[data-bg]").forEach(function(el){
+      BACKGROUNDS.forEach(function(b){ el.classList.remove("bg-"+b.id); });
+      el.classList.add("bg-"+state.bg);
+    });
+
     // textos informativos
     $("#logoName").textContent = lg.name;
     $("#patternName").textContent = pt.name + " · nace de " + pt.origin;
+    $("#bgName").textContent = find(BACKGROUNDS, state.bg).name;
     $("#colorModeLabel").textContent = pal.name + " · modo " + (mode==="dark" ? "oscuro" : "claro");
     $("#typeFaces").textContent = ty.name;
     $("#specDisplay").textContent = ty.dname + " " + ty.dw + " · tracking " + ty.dt;
@@ -1265,7 +1330,7 @@
   function load(){
     try{
       var s = JSON.parse(localStorage.getItem(KEY) || "null");
-      if(s){ ["logo","color","type","pattern","mode"].forEach(function(k){ if(s[k]) state[k]=s[k]; }); }
+      if(s){ ["logo","color","type","pattern","bg","mode"].forEach(function(k){ if(s[k]) state[k]=s[k]; }); }
     }catch(e){}
     if(state.mode!=="dark" && state.mode!=="light"){
       state.mode = (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
@@ -1312,13 +1377,13 @@
       } else fallback();
     });
     $("#resetBtn").addEventListener("click", function(){
-      state.logo=DEFAULTS.logo; state.color=DEFAULTS.color; state.type=DEFAULTS.type; state.pattern=DEFAULTS.pattern;
+      state.logo=DEFAULTS.logo; state.color=DEFAULTS.color; state.type=DEFAULTS.type; state.pattern=DEFAULTS.pattern; state.bg=DEFAULTS.bg;
       applyAll(); toast("Selección restablecida");
     });
   }
 
   load();
-  renderLogoCards(); renderColorCards(); renderTypeCards(); renderPatternCards();
+  renderLogoCards(); renderColorCards(); renderTypeCards(); renderPatternCards(); renderBgCards();
   bind();
   applyAll();
 })();
