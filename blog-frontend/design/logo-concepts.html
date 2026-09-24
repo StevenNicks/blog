@@ -1,0 +1,423 @@
+<title>Blog Brand Marks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e0f0c;
+    --paper:#faf9f6;
+    --lime:#a6e22e;
+    --lime-deep:#7cb518;
+    --graphite:#2a2b26;
+    --mist:#8c8c82;
+    --line:rgba(14,15,12,.10);
+    --card-bg:#ffffff;
+    --page-bg:#f3f2ee;
+    --text:#16170f;
+    --text-soft:#57584d;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --card-bg:#18190f;
+      --page-bg:#0e0f0c;
+      --text:#f4f4ef;
+      --text-soft:#a9aa9d;
+      --line:rgba(255,255,255,.10);
+    }
+  }
+  :root[data-theme="dark"]{
+    --card-bg:#18190f;
+    --page-bg:#0e0f0c;
+    --text:#f4f4ef;
+    --text-soft:#a9aa9d;
+    --line:rgba(255,255,255,.10);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--page-bg);
+    color:var(--text);
+    font-family:"Raleway",ui-sans-serif,system-ui,sans-serif;
+    padding:56px 20px 80px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  .eyebrow{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--lime-deep);
+  }
+  h1{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-weight:800;
+    font-size:clamp(30px,5vw,44px);
+    line-height:1.06;
+    letter-spacing:-.02em;
+    margin:10px 0 14px;
+    text-wrap:balance;
+  }
+  .brief{
+    max-width:62ch;
+    color:var(--text-soft);
+    font-size:16px;
+    line-height:1.6;
+    margin:0 0 40px;
+  }
+  .brief b{color:var(--text);font-weight:600;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+  }
+  @media (max-width:760px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 22px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .card-name{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:-.01em;
+    margin:0;
+  }
+  .card-rationale{
+    font-size:13.5px;
+    color:var(--text-soft);
+    line-height:1.5;
+    margin:4px 0 0;
+    max-width:40ch;
+  }
+  .pill{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:var(--lime);
+    padding:5px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+
+  .swatches{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .swatch{
+    border-radius:14px;
+    padding:22px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .swatch.on-ink{background:var(--ink);}
+  .swatch.on-paper{background:var(--paper); border:1px solid var(--line);}
+  .swatch svg{display:block;}
+
+  .lockup{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 16px;
+    border-radius:14px;
+    background:var(--ink);
+  }
+  .lockup .wordmark{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:-.01em;
+    color:var(--paper);
+  }
+
+  .fav-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-top:2px;
+  }
+  .fav-tab{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:#e7e6e1;
+    border-radius:8px 8px 0 0;
+    padding:6px 10px 5px;
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-size:11px;
+    color:#3c3d33;
+    font-weight:600;
+  }
+  .fav-tab .dot{width:14px;height:14px;border-radius:4px;overflow:hidden;display:flex;}
+  .fav-note{font-size:12px;color:var(--text-soft);}
+
+  .recommended{
+    outline:2px solid var(--lime-deep);
+    outline-offset:-1px;
+  }
+
+  .notes{
+    margin-top:44px;
+    border-top:1px solid var(--line);
+    padding-top:28px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  @media (max-width:760px){ .notes{grid-template-columns:1fr;} }
+  .notes h2{
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    margin:0 0 8px;
+  }
+  .notes p{margin:0;font-size:14px;line-height:1.55;color:var(--text);}
+  .notes code{
+    font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    padding:1px 5px;
+    border-radius:5px;
+    font-size:12.5px;
+  }
+
+  .clearspace{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--paper);
+    border:1px dashed var(--line);
+    border-radius:12px;
+    padding:18px;
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Identidad · Blog</p>
+  <h1>Cuatro marcas para elegir, no una sola respuesta correcta</h1>
+  <p class="brief">
+    Cuatro conceptos de logo dibujados a mano en SVG, pensados para calzar con el sistema visual que ya
+    tiene la app (acento <b>lima</b> sobre superficies casi negras, esquinas suaves, tipografía Inter/Raleway).
+    Cada uno funciona como marca sola (favicon, avatar, sidebar colapsado) y como lockup completo con el
+    nombre. El marcado <b>recomendado</b> es una sugerencia, no un veredicto — la decisión es tuya.
+  </p>
+
+  <div class="grid">
+
+    <!-- Concept 1: Folded Page -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-name">Página doblada</p>
+          <p class="card-rationale">La esquina doblada de una hoja — el gesto más directo hacia "publicar contenido", sin depender de una letra.</p>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="swatch on-ink">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+            <path d="M96 22 L96 0 L74 0 Z" fill="#0e0f0c" opacity="0"/>
+            <path d="M74 0 H96 V22 Z" fill="#0e0f0c"/>
+            <path d="M74 0 L96 22 L74 22 Z" fill="#7cb518"/>
+          </svg>
+        </div>
+        <div class="swatch on-paper">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#0e0f0c"/>
+            <path d="M74 0 H96 V22 Z" fill="#faf9f6"/>
+            <path d="M74 0 L96 22 L74 22 Z" fill="#a6e22e"/>
+          </svg>
+        </div>
+      </div>
+      <div class="lockup">
+        <svg width="34" height="34" viewBox="0 0 96 96" style="flex-shrink:0">
+          <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+          <path d="M74 0 H96 V22 Z" fill="#0e0f0c"/>
+          <path d="M74 0 L96 22 L74 22 Z" fill="#7cb518"/>
+        </svg>
+        <span class="wordmark">Blog</span>
+      </div>
+      <div class="fav-row">
+        <div class="fav-tab">
+          <span class="dot"><svg width="14" height="14" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#a6e22e"/><path d="M74 0 H96 V22 Z" fill="#0e0f0c"/><path d="M74 0 L96 22 L74 22 Z" fill="#7cb518"/></svg></span>
+          Blog
+        </div>
+        <span class="fav-note">Legible incluso a 16px de pestaña.</span>
+      </div>
+    </div>
+
+    <!-- Concept 2: Geometric monogram -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-name">Monograma geométrico</p>
+          <p class="card-rationale">Una "B" propia, construida con bloques redondeados en vez de una tipografía existente — opción más clásica.</p>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="swatch on-ink">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+            <rect x="30" y="24" width="14" height="48" rx="7" fill="#0e0f0c"/>
+            <path d="M40 24 h10 a13 13 0 0 1 0 26 h-10 z" fill="#0e0f0c"/>
+            <path d="M40 50 h12 a13 13 0 0 1 0 26 h-12 z" fill="#0e0f0c"/>
+          </svg>
+        </div>
+        <div class="swatch on-paper">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#0e0f0c"/>
+            <rect x="30" y="24" width="14" height="48" rx="7" fill="#a6e22e"/>
+            <path d="M40 24 h10 a13 13 0 0 1 0 26 h-10 z" fill="#a6e22e"/>
+            <path d="M40 50 h12 a13 13 0 0 1 0 26 h-12 z" fill="#a6e22e"/>
+          </svg>
+        </div>
+      </div>
+      <div class="lockup">
+        <svg width="34" height="34" viewBox="0 0 96 96" style="flex-shrink:0">
+          <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+          <rect x="30" y="24" width="14" height="48" rx="7" fill="#0e0f0c"/>
+          <path d="M40 24 h10 a13 13 0 0 1 0 26 h-10 z" fill="#0e0f0c"/>
+          <path d="M40 50 h12 a13 13 0 0 1 0 26 h-12 z" fill="#0e0f0c"/>
+        </svg>
+        <span class="wordmark">Blog</span>
+      </div>
+      <div class="fav-row">
+        <div class="fav-tab">
+          <span class="dot"><svg width="14" height="14" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#a6e22e"/><rect x="30" y="24" width="14" height="48" rx="7" fill="#0e0f0c"/><path d="M40 24 h10 a13 13 0 0 1 0 26 h-10 z" fill="#0e0f0c"/><path d="M40 50 h12 a13 13 0 0 1 0 26 h-12 z" fill="#0e0f0c"/></svg></span>
+          Blog
+        </div>
+        <span class="fav-note">La opción más "segura" y reconocible.</span>
+      </div>
+    </div>
+
+    <!-- Concept 3: Cursor bloom -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <p class="card-name">Cursor de escritura</p>
+          <p class="card-rationale">Un cursor de texto con un punto — el instante justo antes de escribir. La más minimalista de las cuatro.</p>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="swatch on-ink">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+            <rect x="41" y="22" width="14" height="42" rx="7" fill="#0e0f0c"/>
+            <circle cx="63" cy="70" r="9" fill="#0e0f0c"/>
+          </svg>
+        </div>
+        <div class="swatch on-paper">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#0e0f0c"/>
+            <rect x="41" y="22" width="14" height="42" rx="7" fill="#a6e22e"/>
+            <circle cx="63" cy="70" r="9" fill="#a6e22e"/>
+          </svg>
+        </div>
+      </div>
+      <div class="lockup">
+        <svg width="34" height="34" viewBox="0 0 96 96" style="flex-shrink:0">
+          <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+          <rect x="41" y="22" width="14" height="42" rx="7" fill="#0e0f0c"/>
+          <circle cx="63" cy="70" r="9" fill="#0e0f0c"/>
+        </svg>
+        <span class="wordmark">Blog</span>
+      </div>
+      <div class="fav-row">
+        <div class="fav-tab">
+          <span class="dot"><svg width="14" height="14" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#a6e22e"/><rect x="41" y="22" width="14" height="42" rx="7" fill="#0e0f0c"/><circle cx="63" cy="70" r="9" fill="#0e0f0c"/></svg></span>
+          Blog
+        </div>
+        <span class="fav-note">Muy limpia en tamaños chicos; menos "narrativa".</span>
+      </div>
+    </div>
+
+    <!-- Concept 4: Thread / speech (elegido) -->
+    <div class="card recommended">
+      <div class="card-head">
+        <div>
+          <p class="card-name">Hilo de conversación</p>
+          <p class="card-rationale">Líneas de texto que se resuelven en una cola de globo — contenido que se convierte en conversación.</p>
+        </div>
+        <span class="pill">Elegida ✓</span>
+      </div>
+      <div class="swatches">
+        <div class="swatch on-ink">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+            <rect x="24" y="30" width="48" height="10" rx="5" fill="#0e0f0c"/>
+            <rect x="24" y="48" width="36" height="10" rx="5" fill="#0e0f0c"/>
+            <path d="M24 58 v10 l10 -10 z" fill="#0e0f0c"/>
+          </svg>
+        </div>
+        <div class="swatch on-paper">
+          <svg width="72" height="72" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="22" fill="#0e0f0c"/>
+            <rect x="24" y="30" width="48" height="10" rx="5" fill="#a6e22e"/>
+            <rect x="24" y="48" width="36" height="10" rx="5" fill="#a6e22e"/>
+            <path d="M24 58 v10 l10 -10 z" fill="#a6e22e"/>
+          </svg>
+        </div>
+      </div>
+      <div class="lockup">
+        <svg width="34" height="34" viewBox="0 0 96 96" style="flex-shrink:0">
+          <rect width="96" height="96" rx="22" fill="#a6e22e"/>
+          <rect x="24" y="30" width="48" height="10" rx="5" fill="#0e0f0c"/>
+          <rect x="24" y="48" width="36" height="10" rx="5" fill="#0e0f0c"/>
+          <path d="M24 58 v10 l10 -10 z" fill="#0e0f0c"/>
+        </svg>
+        <span class="wordmark">Blog</span>
+      </div>
+      <div class="fav-row">
+        <div class="fav-tab">
+          <span class="dot"><svg width="14" height="14" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#a6e22e"/><rect x="24" y="30" width="48" height="10" rx="5" fill="#0e0f0c"/><rect x="24" y="48" width="36" height="10" rx="5" fill="#0e0f0c"/><path d="M24 58 v10 l10 -10 z" fill="#0e0f0c"/></svg></span>
+          Blog
+        </div>
+        <span class="fav-note">Guiña directa a la función de comentarios.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="notes">
+    <div>
+      <h2>Espacio libre</h2>
+      <p>Deja alrededor de la marca un margen igual a ¼ de su ancho. No la pegues a bordes ni a otro texto.</p>
+    </div>
+    <div>
+      <h2>Tamaño mínimo</h2>
+      <p>16px para favicon, 24px para avatar de sidebar colapsado. Por debajo de eso, usa solo la marca — nunca el lockup completo.</p>
+    </div>
+    <div>
+      <h2>Dónde reemplazar hoy</h2>
+      <p>
+        <code>components/layout/site-header.tsx</code>,
+        <code>components/dashboard/dashboard-sidebar.tsx</code>,
+        <code>app/(auth)/layout.tsx</code> y <code>app/favicon.ico</code>.
+      </p>
+    </div>
+  </div>
+</div>

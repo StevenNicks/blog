@@ -1,0 +1,340 @@
+<title>Blog Style Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Raleway:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Literata:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0c09; --surface:#15160f; --surface-2:#1e1f17;
+    --text:#f5f4ee; --text-soft:#a7a89a;
+    --accent:#a6e22e; --accent-deep:#7cb518;
+    --ink:#0b0c09; --paper:#faf9f4;
+    --line:rgba(255,255,255,.10); --shadow:rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f4; --surface:#ffffff; --surface-2:#f1f0e8;
+      --text:#16170f; --text-soft:#5b5c4e;
+      --line:rgba(14,15,12,.10); --shadow:rgba(20,20,10,.08);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#faf9f4; --surface:#ffffff; --surface-2:#f1f0e8;
+    --text:#16170f; --text-soft:#5b5c4e;
+    --line:rgba(14,15,12,.10); --shadow:rgba(20,20,10,.08);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b0c09; --surface:#15160f; --surface-2:#1e1f17;
+    --text:#f5f4ee; --text-soft:#a7a89a;
+    --line:rgba(255,255,255,.10); --shadow:rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Raleway",ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  .side-gutter{padding-inline:20px;}
+  @media (min-width:900px){ .side-gutter{padding-inline:56px;} }
+  code,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;}
+
+  .topbar{
+    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--line);
+    background:color-mix(in oklch, var(--bg), transparent 8%);
+    backdrop-filter:blur(10px);
+  }
+  @media (min-width:900px){ .topbar{padding:14px 56px;} }
+  .brand{display:flex; align-items:center; gap:8px; font-family:"Inter"; font-weight:800; font-size:14.5px;}
+  .topbar nav{display:none; gap:20px; font-family:"Inter"; font-weight:600; font-size:12.5px; color:var(--text-soft);}
+  .topbar nav a{text-decoration:none;}
+  .topbar nav a:hover{color:var(--text);}
+  @media (min-width:760px){ .topbar nav{display:flex;} }
+
+  header.hero{padding:64px 20px 40px; max-width:900px; margin:0 auto;}
+  @media (min-width:900px){ header.hero{padding:84px 56px 48px;} }
+  .eyebrow{
+    font-family:"JetBrains Mono"; font-size:12px; text-transform:uppercase; letter-spacing:.14em;
+    color:var(--accent-deep); display:flex; align-items:center; gap:10px; margin-bottom:22px;
+  }
+  .eyebrow::before{content:""; width:20px; height:2px; background:var(--accent-deep);}
+  h1{
+    font-family:"Inter"; font-weight:800; letter-spacing:-.03em; line-height:1.05;
+    font-size:clamp(32px,5.5vw,52px); margin:0 0 18px; text-wrap:balance;
+  }
+  .brief{max-width:60ch; color:var(--text-soft); font-size:16px; line-height:1.6; margin:0;}
+  .brief b{color:var(--text); font-weight:600;}
+
+  section{padding:70px 0 10px;}
+  .section-head{max-width:640px; margin:0 auto 40px;}
+  .kicker{
+    font-family:"JetBrains Mono"; font-size:11.5px; text-transform:uppercase; letter-spacing:.14em;
+    color:var(--accent-deep); display:block; margin-bottom:12px;
+  }
+  h2{font-family:"Inter"; font-weight:800; letter-spacing:-.02em; font-size:clamp(24px,3.4vw,32px); margin:0 0 14px; text-wrap:balance;}
+  .dek{color:var(--text-soft); font-size:15.5px; line-height:1.6; margin:0;}
+
+  .wrap{max-width:1160px; margin:0 auto;}
+
+  /* ---- option grid ---- */
+  .opt-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px;}
+  @media (max-width:820px){ .opt-grid{grid-template-columns:1fr;} }
+  .opt-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:22px; display:flex; flex-direction:column; gap:16px;
+  }
+  .opt-card.pick{outline:2px solid var(--accent-deep); outline-offset:-1px;}
+  .opt-head{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .opt-name{font-family:"Inter"; font-weight:700; font-size:16px; margin:0;}
+  .opt-desc{font-size:13px; color:var(--text-soft); line-height:1.5; margin:4px 0 0; max-width:42ch;}
+  .pill{
+    font-family:"Inter"; font-weight:700; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--accent); color:#0e0f0c; padding:4px 9px; border-radius:999px; white-space:nowrap; flex-shrink:0;
+  }
+  .pill.ghost{background:transparent; border:1px solid var(--line); color:var(--text-soft);}
+
+  /* ---- pattern swatch ---- */
+  .pattern-swatch{height:150px; border-radius:14px;}
+  .p1{ background-color:#a6e22e; background-image:linear-gradient(135deg, transparent 45%, #0b0c09 45%, #0b0c09 55%, transparent 55%); background-size:26px 26px; }
+  .p2{ background-color:#141509; background-image: repeating-linear-gradient(114deg, #a6e22e 0 2px, transparent 2px 17px), repeating-linear-gradient(114deg, rgba(255,255,255,.08) 2px 3px, transparent 3px 17px); }
+  .p3{ background-color:#0b0c09; background-image:
+        linear-gradient(135deg, transparent 46%, #a6e22e 46%, #a6e22e 52%, transparent 52%),
+        linear-gradient(45deg, transparent 46%, #7cb518 46%, #7cb518 52%, transparent 52%),
+        linear-gradient(205deg, transparent 46%, #a6e22e 46%, #a6e22e 52%, transparent 52%);
+       background-size:44px 44px, 61px 61px, 37px 37px;
+       background-position:0 0, 22px 28px, 8px 4px; }
+  .p4{ background-color:#0e0f0c; background-image: repeating-radial-gradient(circle at 50% 132%, transparent 0 13px, rgba(166,226,46,.4) 13px 14.5px); }
+
+  /* ---- color option ---- */
+  .swatch-row{display:flex; border-radius:12px; overflow:hidden; height:56px;}
+  .swatch-row div{flex:1;}
+  .applied-demo{
+    display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:12px;
+  }
+  .demo-btn{font-family:"Inter"; font-weight:700; font-size:12px; padding:7px 13px; border-radius:8px;}
+  .demo-badge{font-family:"Inter"; font-weight:600; font-size:10.5px; padding:4px 10px; border-radius:999px;}
+  .hexes{display:flex; flex-wrap:wrap; gap:6px 14px; font-family:"JetBrains Mono"; font-size:10.5px; color:var(--text-soft);}
+
+  /* ---- type option ---- */
+  .type-card-display{font-weight:600; letter-spacing:-.01em; line-height:1.12; font-size:clamp(24px,3vw,34px); margin:0 0 8px;}
+  .type-card-body{font-size:14px; line-height:1.55; color:var(--text-soft); max-width:44ch; margin:0;}
+  .type-faces{font-family:"JetBrains Mono"; font-size:10.5px; color:var(--text-soft); margin-top:2px;}
+
+  .verdict{
+    margin-top:56px; border:1px dashed var(--line); border-radius:16px; padding:22px 24px;
+    font-size:13.5px; color:var(--text-soft); line-height:1.6;
+  }
+  .verdict b{color:var(--text);}
+
+  footer{
+    border-top:1px solid var(--line); margin-top:80px; padding:30px 0;
+    font-family:"JetBrains Mono"; font-size:11.5px; color:var(--text-soft);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+</style>
+
+<div class="topbar side-gutter">
+  <div class="brand">
+    <svg width="20" height="20" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="var(--accent)"/><path d="M74 0 H96 V22 Z" fill="var(--ink)"/><path d="M74 0 L96 22 L74 22 Z" fill="var(--accent-deep)"/></svg>
+    Blog — Direcciones de estilo
+  </div>
+  <nav>
+    <a href="#patron">Patrón</a>
+    <a href="#color">Color</a>
+    <a href="#tipografia">Tipografía</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <span class="eyebrow">Exploración · 3 categorías, 4 opciones cada una</span>
+  <h1>Antes de fijar el sistema, comparemos alternativas reales.</h1>
+  <p class="brief">
+    El logo (página doblada) ya quedó aprobado. Ahora toca lo mismo para <b>patrón</b>, <b>color</b>
+    y <b>tipografía</b>: cuatro caminos distintos por categoría, cada uno con su propia lógica,
+    para que elijas — no para que aceptes el primero.
+  </p>
+</header>
+
+<main class="wrap side-gutter">
+
+  <!-- ============ PATTERN ============ -->
+  <section id="patron">
+    <div class="section-head">
+      <span class="kicker">01 · Patrón</span>
+      <h2>Cuatro formas de repetir el pliegue</h2>
+      <p class="dek">Todas parten del mismo triángulo del logo, pero lo tratan distinto: como cuadrícula, como pila de papel, como confeti o como onda.</p>
+    </div>
+
+    <div class="opt-grid">
+      <div class="opt-card pick">
+        <div class="opt-head">
+          <div><p class="opt-name">Cuadrícula de pliegues</p><p class="opt-desc">El triángulo del logo repetido en una malla regular y predecible. El más "de marca" — se reconoce de inmediato.</p></div>
+          <span class="pill">Recomendado</span>
+        </div>
+        <div class="pattern-swatch p1"></div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Pila de papel</p><p class="opt-desc">Líneas diagonales finas, como el canto de muchas hojas apiladas. Más textural, funciona bien detrás de texto claro.</p></div>
+        </div>
+        <div class="pattern-swatch p2"></div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Confeti de esquinas</p><p class="opt-desc">Pliegues sueltos, sin cuadrícula — esquinas de página "atrapadas" a mitad de giro. Ideal para estados vacíos o portadas por defecto.</p></div>
+        </div>
+        <div class="pattern-swatch p3"></div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Ondas de contorno</p><p class="opt-desc">El eco circular que deja una página al doblarse. El más silencioso de los cuatro — casi textura, no ícono.</p></div>
+        </div>
+        <div class="pattern-swatch p4"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COLOR ============ -->
+  <section id="color">
+    <div class="section-head">
+      <span class="kicker">02 · Color</span>
+      <h2>Cuatro personalidades para el mismo lima</h2>
+      <p class="dek">El verde lima del logo se queda fijo en las cuatro — lo que cambia es todo lo que lo rodea.</p>
+    </div>
+
+    <div class="opt-grid">
+
+      <div class="opt-card pick">
+        <div class="opt-head">
+          <div><p class="opt-name">Lima sobre tinta</p><p class="opt-desc">La paleta ya construida en la app: casi-negro cálido, lima puro como único acento. Directa, sin ruido.</p></div>
+          <span class="pill">Ya implementada</span>
+        </div>
+        <div class="swatch-row">
+          <div style="background:#0b0c09;"></div><div style="background:#15160f;"></div>
+          <div style="background:#a6e22e;"></div><div style="background:#7cb518;"></div>
+          <div style="background:#a7a89a;"></div><div style="background:#faf9f4;"></div>
+        </div>
+        <div class="applied-demo" style="background:#0b0c09;">
+          <span class="demo-btn" style="background:#a6e22e;color:#0e0f0c;">Nuevo post</span>
+          <span class="demo-badge" style="background:rgba(166,226,46,.15);color:#a6e22e;">Publicado</span>
+        </div>
+        <p class="hexes">#0B0C09 · #15160F · #A6E22E · #7CB518 · #A7A89A · #FAF9F4</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Papel cálido</p><p class="opt-desc">El modo claro pasa a ser la cara principal: crema en vez de blanco puro, tinta cálida, rojo reemplazado por terracota. Sensación editorial impresa.</p></div>
+        </div>
+        <div class="swatch-row">
+          <div style="background:#f6f1e4;"></div><div style="background:#241f13;"></div>
+          <div style="background:#a6e22e;"></div><div style="background:#5c6b1f;"></div>
+          <div style="background:#c65d3b;"></div><div style="background:#ffffff;"></div>
+        </div>
+        <div class="applied-demo" style="background:#f6f1e4; color:#241f13;">
+          <span class="demo-btn" style="background:#241f13;color:#f6f1e4;">Nuevo post</span>
+          <span class="demo-badge" style="background:rgba(92,107,31,.15);color:#5c6b1f;">Publicado</span>
+        </div>
+        <p class="hexes">#F6F1E4 · #241F13 · #A6E22E · #5C6B1F · #C65D3B · #FFFFFF</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Lima + coral</p><p class="opt-desc">Se mantiene la base actual, pero se suma un segundo acento cálido para "destacados" y notificaciones — más rango sin perder al lima como protagonista.</p></div>
+        </div>
+        <div class="swatch-row">
+          <div style="background:#0b0c09;"></div><div style="background:#15160f;"></div>
+          <div style="background:#a6e22e;"></div><div style="background:#ff7a59;"></div>
+          <div style="background:#a7a89a;"></div><div style="background:#faf9f4;"></div>
+        </div>
+        <div class="applied-demo" style="background:#0b0c09;">
+          <span class="demo-btn" style="background:#a6e22e;color:#0e0f0c;">Nuevo post</span>
+          <span class="demo-badge" style="background:rgba(255,122,89,.16);color:#ff7a59;">Destacado</span>
+        </div>
+        <p class="hexes">#0B0C09 · #15160F · #A6E22E · #FF7A59 · #A7A89A · #FAF9F4</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Tonal verde</p><p class="opt-desc">La apuesta más arriesgada: nada de gris ni negro puro — todo vive dentro de la familia del verde, del bosque profundo al lima. Más "botánico" que "tech".</p></div>
+        </div>
+        <div class="swatch-row">
+          <div style="background:#16281a;"></div><div style="background:#3c5a3f;"></div>
+          <div style="background:#a6e22e;"></div><div style="background:#9fb89a;"></div>
+          <div style="background:#7cb518;"></div><div style="background:#eef2e6;"></div>
+        </div>
+        <div class="applied-demo" style="background:#16281a;">
+          <span class="demo-btn" style="background:#a6e22e;color:#0e0f0c;">Nuevo post</span>
+          <span class="demo-badge" style="background:rgba(166,226,46,.18);color:#a6e22e;">Publicado</span>
+        </div>
+        <p class="hexes">#16281A · #3C5A3F · #A6E22E · #9FB89A · #7CB518 · #EEF2E6</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ TYPE ============ -->
+  <section id="tipografia">
+    <div class="section-head">
+      <span class="kicker">03 · Tipografía</span>
+      <h2>Cuatro voces para los títulos de post</h2>
+      <p class="dek">El cuerpo de texto casi no cambia entre opciones — lo que cambia es el carácter del titular, que es lo primero que se lee de cada post.</p>
+    </div>
+
+    <div class="opt-grid">
+
+      <div class="opt-card pick">
+        <div class="opt-head">
+          <div><p class="opt-name">Inter + Raleway</p><p class="opt-desc">La pareja ya usada en toda la app. Geométrica y neutra — prioriza la interfaz por sobre la personalidad editorial.</p></div>
+          <span class="pill">Ya implementada</span>
+        </div>
+        <p class="type-card-display" style="font-family:'Inter'; font-weight:800;">Construyendo un blog moderno</p>
+        <p class="type-card-body" style="font-family:'Raleway';">En este artículo exploramos cómo construir una API de blog completa con Node.js y Express.</p>
+        <p class="type-faces">Inter 800 · Raleway 400</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Fraunces + Inter</p><p class="opt-desc">Un serif display con carácter para los títulos de post — se siente escrito, no generado. Inter se queda a cargo de toda la interfaz.</p></div>
+        </div>
+        <p class="type-card-display" style="font-family:'Fraunces'; font-weight:600; font-style:italic;">Construyendo un blog moderno</p>
+        <p class="type-card-body" style="font-family:'Raleway';">En este artículo exploramos cómo construir una API de blog completa con Node.js y Express.</p>
+        <p class="type-faces">Fraunces 600 italic · Inter / Raleway</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Space Grotesk + Literata</p><p class="opt-desc">Titular geométrico y anguloso combinado con un serif de lectura pensado para pantalla. El par con más contraste de los cuatro.</p></div>
+        </div>
+        <p class="type-card-display" style="font-family:'Space Grotesk'; font-weight:700;">Construyendo un blog moderno</p>
+        <p class="type-card-body" style="font-family:'Literata';">En este artículo exploramos cómo construir una API de blog completa con Node.js y Express.</p>
+        <p class="type-faces">Space Grotesk 700 · Literata 400</p>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-head">
+          <div><p class="opt-name">Instrument Serif + Raleway</p><p class="opt-desc">Un serif fino y elegante, casi de invitación — cambia solo el titular, todo lo demás sigue igual que hoy. El ajuste más discreto.</p></div>
+        </div>
+        <p class="type-card-display" style="font-family:'Instrument Serif'; font-weight:400; font-size:clamp(28px,3.4vw,38px);">Construyendo un blog moderno</p>
+        <p class="type-card-body" style="font-family:'Raleway';">En este artículo exploramos cómo construir una API de blog completa con Node.js y Express.</p>
+        <p class="type-faces">Instrument Serif 400 · Raleway 500</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="verdict">
+    <b>Cómo leer esto:</b> las tarjetas marcadas "Ya implementada" son lo que ya corre en el blog hoy
+    — quedan como punto de comparación, no hace falta re-aprobarlas. Elige una opción por categoría
+    (pueden ser todas nuevas, todas las actuales, o una mezcla) y la aplico directo al código.
+  </div>
+
+  <footer>
+    <span>Blog · Direcciones de estilo</span>
+    <span>Logo ya aprobado — este documento cubre patrón, color y tipografía</span>
+  </footer>
+</main>
