@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="es" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blog — Concept Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Raleway:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Space+Grotesk:wght@500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     Tokens base (los sobrescribe JS según la selección)
+     ========================================================= */
+  :root{
+    --bg:#0b0c09; --surface:#15160f; --surface-2:#1e1f17;
+    --text:#f5f4ee; --text-soft:#a7a89a; --line:rgba(255,255,255,.10);
+    --accent:#a6e22e; --accent-fg:#0e0f0c; --accent-2:#7cb518; --accent-text:#a6e22e;
+    --highlight:#a6e22e; --destructive:#e2554f; --ring:#7cb518;
+    --ink:#0e0f0c; --paper:#faf9f4; --brand-bright:#a6e22e;
+    --radius:.45rem;
+    --font-ui:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-display:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-body:"Raleway",ui-sans-serif,system-ui,sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --display-weight:800; --display-style:normal; --display-tracking:-.03em; --display-scale:1;
+    --shadow:rgba(0,0,0,.35);
+    --gutter:20px;
+    --topbar-h:56px;
+  }
+  html[data-mode="light"]{ --shadow:rgba(20,20,10,.10); }
+  @media (min-width:900px){ :root{ --gutter:56px; } }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; scroll-padding-top:calc(var(--topbar-h) + 16px);}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} *{transition:none!important;} }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(110px + env(safe-area-inset-bottom,0px));
+    transition:background-color .35s ease, color .35s ease;
+  }
+  img,svg{max-width:100%;}
+  button{font:inherit; color:inherit;}
+  a{color:inherit;}
+  code,.mono{font-family:var(--font-mono);}
+  .wrap{max-width:1160px; margin:0 auto; padding-inline:var(--gutter);}
+  .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+  :focus-visible{outline:2px solid var(--ring); outline-offset:2px;}
+
+  .disp{
+    font-family:var(--font-display); font-weight:var(--display-weight);
+    font-style:var(--display-style); letter-spacing:var(--display-tracking);
+  }
+
+  /* =========================================================
+     Topbar
+     ========================================================= */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    padding-top:env(safe-area-inset-top,0px);
+    background:color-mix(in oklch, var(--bg) 88%, transparent);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{height:var(--topbar-h); display:flex; align-items:center; justify-content:space-between; gap:16px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:var(--font-ui); font-weight:800; font-size:14.5px; text-decoration:none; white-space:nowrap;}
+  .brand small{font-weight:500; color:var(--text-soft); font-size:12.5px;}
+  .topnav{display:none; gap:22px; font-family:var(--font-ui); font-weight:600; font-size:12.5px; color:var(--text-soft);}
+  .topnav a{text-decoration:none; transition:color .2s;}
+  .topnav a:hover{color:var(--text);}
+  @media (min-width:980px){ .topnav{display:flex;} }
+  .icon-btn{
+    width:38px; height:38px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); display:grid; place-items:center; cursor:pointer;
+    transition:background-color .2s, transform .15s;
+  }
+  .icon-btn:hover{background:var(--surface-2);}
+  .icon-btn:active{transform:scale(.94);}
+  .icon-btn svg{width:18px; height:18px;}
+  html[data-mode="dark"] .i-sun{display:block;} html[data-mode="dark"] .i-moon{display:none;}
+  html[data-mode="light"] .i-sun{display:none;} html[data-mode="light"] .i-moon{display:block;}
+
+  /* =========================================================
+     Hero
+     ========================================================= */
+  .hero{padding:56px 0 44px;}
+  @media (min-width:900px){ .hero{padding:88px 0 64px;} }
+  .hero-grid{display:grid; gap:40px; align-items:center;}
+  @media (min-width:900px){ .hero-grid{grid-template-columns:1.25fr .75fr; gap:56px;} }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.14em;
+    color:var(--accent-text); display:flex; align-items:center; gap:10px; margin:0 0 20px;
+  }
+  .eyebrow::before{content:""; width:20px; height:2px; background:currentColor;}
+  h1{
+    font-size:calc(clamp(36px,7vw,68px) * var(--display-scale)); line-height:1.02;
+    margin:0 0 20px; text-wrap:balance;
+  }
+  .lead{font-size:17px; color:var(--text-soft); max-width:58ch; margin:0;}
+  .lead b{color:var(--text); font-weight:600;}
+  .hero-meta{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-top:32px; padding-top:22px; border-top:1px solid var(--line);}
+  .hero-meta .k{display:block; font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-soft);}
+  .hero-meta .v{display:block; font-family:var(--font-ui); font-weight:600; font-size:13.5px; margin-top:4px;}
+  .hero-stage{
+    position:relative; aspect-ratio:1; max-width:min(360px, 78vw); width:100%; margin:0 auto;
+    border-radius:28px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 30px 70px -35px var(--shadow);
+  }
+  .hero-stage > [data-pattern]{position:absolute; inset:0;}
+  .hero-stage .hero-mark{
+    position:absolute; inset:0; display:grid; place-items:center;
+  }
+  .hero-stage .hero-mark > div{
+    width:58%; padding:9%; border-radius:30%; background:var(--bg);
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.5);
+  }
+  .hero-stage .hero-mark svg{width:100%; height:auto; display:block;}
+  .howto{
+    display:flex; gap:12px; align-items:flex-start; margin-top:36px; padding:16px 18px;
+    border:1px dashed var(--line); border-radius:14px; font-size:14px; color:var(--text-soft);
+  }
+  .howto b{color:var(--text);}
+  .howto .n{flex-shrink:0; width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background:var(--accent); color:var(--accent-fg); font-family:var(--font-ui); font-weight:800; font-size:13px;}
+  .strip{height:44px; transition:background .35s;}
+  @media (min-width:900px){ .strip{height:56px;} }
+
+  /* =========================================================
+     Secciones
+     ========================================================= */
+  section{padding:72px 0 8px;}
+  @media (min-width:900px){ section{padding:100px 0 8px;} }
+  .section-head{max-width:680px; margin:0 0 32px;}
+  .kicker{font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.14em; color:var(--accent-text); display:block; margin-bottom:12px;}
+  h2{font-size:calc(clamp(26px,4vw,38px) * var(--display-scale)); line-height:1.1; margin:0 0 14px; text-wrap:balance;}
+  .dek{color:var(--text-soft); font-size:15.5px; margin:0;}
+  .dek b{color:var(--text); font-weight:600;}
+  .sub-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:48px 0 16px;}
+  .sub-head h3{font-family:var(--font-ui); font-weight:700; font-size:15px; margin:0;}
+  .sub-head span{font-family:var(--font-mono); font-size:11px; color:var(--text-soft);}
+
+  /* =========================================================
+     Tarjetas seleccionables
+     ========================================================= */
+  .opt-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px;}
+  .opt-grid.five{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+  .swipe-hint{display:none; font-family:var(--font-mono); font-size:11px; color:var(--text-soft); margin:-18px 0 12px;}
+  @media (max-width:719px){
+    .opt-grid, .opt-grid.five{
+      grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:84%;
+      overflow-x:auto; scroll-snap-type:x mandatory; overscroll-behavior-x:contain;
+      margin-inline:calc(var(--gutter) * -1); padding:4px var(--gutter) 14px;
+      scroll-padding-inline:var(--gutter); scrollbar-width:none;
+    }
+    .opt-grid::-webkit-scrollbar{display:none;}
+    .opt-grid > *{scroll-snap-align:start;}
+    .swipe-hint{display:block;}
+  }
+  .opt{
+    position:relative; text-align:left; cursor:pointer; width:100%;
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:18px; display:flex; flex-direction:column; gap:14px;
+    transition:border-color .2s, transform .2s, box-shadow .2s, background-color .35s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .opt:hover{border-color:color-mix(in oklch, var(--accent-text) 45%, var(--line)); transform:translateY(-2px);}
+  .opt:active{transform:scale(.99);}
+  .opt[aria-checked="true"]{
+    border-color:var(--accent-text);
+    box-shadow:0 0 0 1px var(--accent-text), 0 18px 40px -24px var(--shadow);
+  }
+  .opt-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .opt-name{font-family:var(--font-ui); font-weight:700; font-size:15.5px; margin:0; line-height:1.3;}
+  .opt-desc{font-size:13px; color:var(--text-soft); line-height:1.5; margin:4px 0 0;}
+  .opt-foot{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto;}
+  .tag{font-family:var(--font-mono); font-size:10.5px; color:var(--text-soft);}
+  .check{
+    flex-shrink:0; width:24px; height:24px; border-radius:999px; border:1.5px solid var(--line);
+    display:grid; place-items:center; transition:all .2s;
+  }
+  .check svg{width:13px; height:13px; opacity:0; transform:scale(.6); transition:all .2s;}
+  .opt[aria-checked="true"] .check{background:var(--accent); border-color:var(--accent); color:var(--accent-fg);}
+  .opt[aria-checked="true"] .check svg{opacity:1; transform:scale(1);}
+  .pill{
+    font-family:var(--font-ui); font-weight:700; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+    padding:4px 9px; border-radius:999px; white-space:nowrap;
+    border:1px solid var(--line); color:var(--text-soft);
+  }
+
+  /* logo option */
+  .logo-tiles{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .logo-tiles > div{border-radius:12px; padding:18px 10px; display:grid; place-items:center;}
+  .logo-tiles svg{width:60px; height:60px;}
+  .on-ink{background:var(--ink);}
+  .on-paper{background:var(--paper); box-shadow:inset 0 0 0 1px rgba(0,0,0,.07);}
+
+  /* palette option */
+  .swatch-row{display:flex; height:48px; border-radius:10px; overflow:hidden;}
+  .swatch-row i{flex:1;}
+  .mini-pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:8px;}
+  .mini{
+    background:var(--bg); color:var(--text); border:1px solid var(--line);
+    border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;
+  }
+  .mini .mode{font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-soft);}
+  .mini .row{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+
+  /* type option */
+  .type-sample{font-size:calc(26px * var(--s,1)); line-height:1.12; margin:0;}
+  .type-body{font-size:13.5px; line-height:1.55; color:var(--text-soft); margin:0;}
+
+  /* pattern option */
+  .pat-box{height:120px; border-radius:12px;}
+
+  /* =========================================================
+     Patrones (usan los tokens → cambian con la paleta)
+     ========================================================= */
+  .pat-ruled{
+    background-color:var(--accent);
+    background-image:repeating-linear-gradient(0deg, var(--accent-fg) 0 8px, transparent 8px 28px);
+  }
+  .pat-grid{
+    background-color:var(--accent);
+    background-image:linear-gradient(135deg, transparent 45%, var(--accent-fg) 45%, var(--accent-fg) 55%, transparent 55%);
+    background-size:26px 26px;
+  }
+  .pat-stack{
+    background-color:var(--ink);
+    background-image:
+      repeating-linear-gradient(114deg, var(--brand-bright) 0 2px, transparent 2px 17px),
+      repeating-linear-gradient(114deg, rgba(255,255,255,.08) 2px 3px, transparent 3px 17px);
+  }
+  .pat-confetti{
+    background-color:var(--ink);
+    background-image:
+      linear-gradient(135deg, transparent 46%, var(--brand-bright) 46%, var(--brand-bright) 52%, transparent 52%),
+      linear-gradient(45deg, transparent 46%, var(--accent-2) 46%, var(--accent-2) 52%, transparent 52%),
+      linear-gradient(205deg, transparent 46%, var(--brand-bright) 46%, var(--brand-bright) 52%, transparent 52%);
+    background-size:44px 44px, 61px 61px, 37px 37px;
+    background-position:0 0, 22px 28px, 8px 4px;
+  }
+  .pat-waves{
+    background-color:var(--ink);
+    background-image:repeating-radial-gradient(circle at 50% 132%, transparent 0 13px, color-mix(in oklch, var(--brand-bright) 45%, transparent) 13px 14.5px);
+  }
+  .soft{position:relative;}
+  .soft::before{content:""; position:absolute; inset:0; background:var(--surface); opacity:.72; border-radius:inherit;}
+  .soft > *{position:relative;}
+
+  /* =========================================================
+     Paneles de especificación
+     ========================================================= */
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:20px; transition:background-color .35s;}
+  .panel-label{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-soft); margin:0 0 12px;}
+  .spec-grid{display:grid; gap:16px;}
+  @media (min-width:820px){ .spec-grid{grid-template-columns:1.1fr .9fr;} }
+  .mark-stage{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .mark-stage > div{border-radius:14px; padding:26px 12px; display:grid; place-items:center;}
+  .mark-stage svg{width:84px; height:84px;}
+  .clear{
+    margin-top:12px; display:grid; place-items:center; padding:12px;
+    border-radius:14px; background:var(--surface-2);
+  }
+  .clear svg{width:128px; height:128px;}
+  .lockups{display:flex; flex-direction:column; gap:10px;}
+  .lockup{display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:14px; background:var(--ink); color:#f5f4ee;}
+  .lockup.light{background:var(--paper); color:#16170f; box-shadow:inset 0 0 0 1px rgba(0,0,0,.07);}
+  .lockup.stacked{flex-direction:column; align-items:flex-start; gap:8px;}
+  .wm{font-family:var(--font-display); font-weight:var(--display-weight); font-style:var(--display-style); letter-spacing:var(--display-tracking); font-size:calc(22px * var(--display-scale)); line-height:1;}
+  .fav-strip{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;}
+  .fav-tab{display:flex; align-items:center; gap:7px; background:var(--surface-2); border-radius:9px 9px 0 0; padding:7px 12px 6px; font-family:var(--font-ui); font-size:11.5px; font-weight:600;}
+  .fav-size{display:flex; flex-direction:column; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px; color:var(--text-soft);}
+  .rules{list-style:none; padding:0; margin:16px 0 0; display:grid; gap:8px;}
+  .rules li{display:flex; gap:10px; font-size:13.5px; color:var(--text-soft); line-height:1.5;}
+  .rules .x{color:var(--destructive); font-weight:700; flex-shrink:0;}
+  .rules .ok{color:var(--accent-text); font-weight:700; flex-shrink:0;}
+
+  /* color tokens */
+  .token-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
+  .token{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface);}
+  .token-color{height:76px; border-bottom:1px solid var(--line);}
+  .token-info{padding:10px 12px 12px;}
+  .token-name{font-family:var(--font-ui); font-weight:700; font-size:13px; margin:0;}
+  .token-val{font-family:var(--font-mono); font-size:10.5px; color:var(--text-soft); margin:3px 0 0; word-break:break-all;}
+  .token-role{font-size:11.5px; color:var(--text-soft); margin:6px 0 0; line-height:1.4;}
+  .mode-compare{display:grid; gap:14px; margin-top:16px;}
+  @media (min-width:720px){ .mode-compare{grid-template-columns:1fr 1fr;} }
+  .mode-card{background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:18px; padding:20px; display:flex; flex-direction:column; gap:14px;}
+  .mode-card .row{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .contrast{font-family:var(--font-mono); font-size:10.5px; color:var(--text-soft);}
+
+  /* componentes UI compartidos */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    font-family:var(--font-ui); font-weight:700; font-size:12.5px; line-height:1;
+    padding:9px 14px; border-radius:var(--radius); border:1px solid transparent;
+    background:var(--accent); color:var(--accent-fg); white-space:nowrap; cursor:default;
+  }
+  .btn.sec{background:var(--surface-2); color:var(--text);}
+  .btn.out{background:transparent; border-color:var(--line); color:var(--text);}
+  .btn.del{background:var(--destructive); color:#fff;}
+  .btn.sm{padding:7px 11px; font-size:11.5px;}
+  .badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:var(--font-ui); font-weight:600; font-size:10.5px; line-height:1;
+    padding:5px 9px; border-radius:999px;
+    background:color-mix(in oklch, var(--accent-text) 16%, transparent); color:var(--accent-text);
+  }
+  .badge.hl{background:color-mix(in oklch, var(--highlight) 18%, transparent); color:var(--highlight);}
+  .badge.neutral{background:var(--surface-2); color:var(--text-soft);}
+  .input{
+    display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:var(--radius);
+    border:1px solid var(--line); background:var(--bg); color:var(--text-soft); font-size:13px;
+  }
+  .input.focus{border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in oklch, var(--ring) 25%, transparent); color:var(--text);}
+  .caret{display:inline-block; width:1.5px; height:14px; background:var(--accent-text); animation:blink 1s steps(1) infinite; margin-left:-4px;}
+  @keyframes blink{50%{opacity:0;}}
+  .switch{width:34px; height:20px; border-radius:999px; background:var(--accent); position:relative; flex-shrink:0;}
+  .switch::after{content:""; position:absolute; top:3px; right:3px; width:14px; height:14px; border-radius:50%; background:var(--accent-fg);}
+
+  /* tipografía */
+  .specimen{border-top:1px solid var(--line); padding:24px 0;}
+  .specimen:last-of-type{border-bottom:1px solid var(--line);}
+  .spec-role{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
+  .spec-role .n{font-family:var(--font-ui); font-weight:700; font-size:13px;}
+  .spec-role .s{font-family:var(--font-mono); font-size:11px; color:var(--text-soft);}
+  .spec-display{font-size:calc(clamp(34px,6vw,60px) * var(--display-scale)); line-height:1.05; margin:0; text-wrap:balance;}
+  .spec-body{font-family:var(--font-body); font-size:17px; line-height:1.65; margin:0; max-width:62ch;}
+  .spec-mono{font-family:var(--font-mono); font-size:14px; margin:0; color:var(--accent-text);}
+  .table-wrap{overflow-x:auto; margin-top:28px; border:1px solid var(--line); border-radius:14px;}
+  table{width:100%; border-collapse:collapse; font-size:13px; min-width:560px;}
+  th{font-family:var(--font-mono); font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); text-align:left; padding:12px 14px; background:var(--surface);}
+  td{padding:12px 14px; border-top:1px solid var(--line); vertical-align:middle;}
+  td.m{font-family:var(--font-mono); font-size:11.5px; color:var(--text-soft);}
+
+  /* patrón – usos */
+  .pat-uses{display:grid; gap:14px;}
+  @media (min-width:720px){ .pat-uses{grid-template-columns:1.4fr 1fr;} }
+  .use-card{border:1px solid var(--line); border-radius:18px; overflow:hidden; background:var(--surface);}
+  .use-card .cap{padding:12px 16px; font-size:12.5px; color:var(--text-soft); display:flex; justify-content:space-between; gap:10px;}
+  .use-card .cap b{color:var(--text); font-family:var(--font-ui); font-weight:600;}
+  .cover-demo{height:220px; position:relative; display:flex; align-items:flex-end; padding:16px;}
+  .cover-demo .chip{background:var(--bg); color:var(--text); border-radius:12px; padding:12px 14px; max-width:280px; box-shadow:0 12px 30px -12px rgba(0,0,0,.4);}
+  .cover-demo .chip p{margin:0; font-size:calc(18px * var(--display-scale)); line-height:1.2;}
+  .empty-demo{height:220px; display:grid; place-items:center; text-align:center; padding:16px;}
+  .empty-demo .inner{display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .empty-demo p{margin:0; font-size:13px; color:var(--text-soft); max-width:26ch;}
+  .divider-demo{height:22px;}
+
+  /* =========================================================
+     Vista previa (mockups)
+     ========================================================= */
+  .preview-grid{display:grid; gap:24px; align-items:start;}
+  @media (min-width:1000px){ .preview-grid{grid-template-columns:1fr 320px;} }
+  .browser{border-radius:16px; overflow:hidden; border:1px solid var(--line); background:var(--bg); box-shadow:0 30px 70px -35px var(--shadow);}
+  .browser-bar{display:flex; align-items:center; gap:7px; padding:10px 12px; background:var(--surface-2); border-bottom:1px solid var(--line);}
+  .browser-bar .d{width:10px; height:10px; border-radius:50%; background:var(--line);}
+  .browser-bar .url{margin-left:10px; flex:1; max-width:340px; font-family:var(--font-mono); font-size:11px; color:var(--text-soft); background:var(--bg); border-radius:7px; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .app-head{display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line);}
+  .app-head .wm{font-size:calc(18px * var(--display-scale));}
+  .app-nav{display:none; gap:18px; margin-left:18px; font-family:var(--font-ui); font-size:12.5px; font-weight:600; color:var(--text-soft);}
+  .app-nav span:first-child{color:var(--text);}
+  @media (min-width:640px){ .app-nav{display:flex;} }
+  .app-head .btn{margin-left:auto;}
+  .app-hero{position:relative; margin:18px; border-radius:16px; overflow:hidden; min-height:230px; display:flex; align-items:flex-end; padding:18px;}
+  .app-hero-card{position:relative; background:var(--bg); border-radius:14px; padding:18px; max-width:420px; box-shadow:0 20px 40px -18px rgba(0,0,0,.45);}
+  .app-hero-card h3{font-size:calc(clamp(20px,3vw,28px) * var(--display-scale)); line-height:1.12; margin:10px 0 8px;}
+  .app-hero-card p{margin:0 0 14px; font-size:13.5px; color:var(--text-soft); line-height:1.55;}
+  .app-tools{display:flex; flex-wrap:wrap; gap:8px; padding:0 18px 16px; align-items:center;}
+  .app-tools .input{flex:1 1 200px;}
+  .chipf{font-family:var(--font-ui); font-size:11.5px; font-weight:600; padding:7px 11px; border-radius:999px; border:1px solid var(--line); color:var(--text-soft);}
+  .chipf.on{background:var(--text); color:var(--bg); border-color:var(--text);}
+  .app-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; padding:0 18px 20px;}
+  .post{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface); display:flex; flex-direction:column;}
+  .post-cover{height:110px; position:relative;}
+  .post-cover.solid{background:linear-gradient(135deg, var(--accent-2), var(--ink));}
+  .post-cover.mark{background:var(--surface-2); display:grid; place-items:center;}
+  .post-body{padding:14px; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .post h4{font-size:calc(16px * var(--display-scale)); line-height:1.25; margin:0;}
+  .post p{margin:0; font-size:12.5px; color:var(--text-soft); line-height:1.5;}
+  .post-meta{display:flex; align-items:center; gap:8px; margin-top:auto; padding-top:6px; font-family:var(--font-mono); font-size:10px; color:var(--text-soft);}
+  .avatar{width:22px; height:22px; border-radius:50%; background:var(--accent-2); flex-shrink:0;}
+
+  .phone{
+    width:100%; max-width:320px; margin:0 auto; border-radius:40px; padding:10px;
+    background:#0a0a0a; box-shadow:0 30px 70px -30px var(--shadow), inset 0 0 0 1.5px #2a2a2a;
+  }
+  .phone-screen{border-radius:31px; overflow:hidden; background:var(--bg); color:var(--text); height:640px; display:flex; flex-direction:column; position:relative;}
+  .phone-status{display:flex; justify-content:space-between; align-items:center; padding:12px 22px 6px; font-family:var(--font-ui); font-weight:700; font-size:12px;}
+  .phone-status .notch{width:86px; height:24px; border-radius:20px; background:#0a0a0a;}
+  .phone-head{display:flex; align-items:center; gap:10px; padding:8px 16px 10px;}
+  .phone-head .wm{font-size:calc(16px * var(--display-scale));}
+  .phone-head .back{margin-left:auto; font-family:var(--font-ui); font-size:11px; color:var(--text-soft);}
+  .phone-scroll{flex:1; overflow:hidden;}
+  .phone-cover{height:150px; margin:0 14px; border-radius:16px;}
+  .phone-article{padding:16px 18px;}
+  .phone-article h4{font-size:calc(22px * var(--display-scale)); line-height:1.15; margin:10px 0 8px;}
+  .phone-article .meta{font-family:var(--font-mono); font-size:10px; color:var(--text-soft);}
+  .phone-article p{font-size:13.5px; line-height:1.6; margin:10px 0 0; color:var(--text);}
+  .comment{display:flex; gap:10px; margin:14px 18px 0;}
+  .bubble{background:var(--surface-2); border-radius:14px 14px 14px 4px; padding:10px 12px; font-size:12px; line-height:1.45;}
+  .bubble b{display:block; font-family:var(--font-ui); font-size:11px; margin-bottom:2px;}
+  .phone-compose{display:flex; gap:8px; align-items:center; padding:12px 14px 22px; border-top:1px solid var(--line); background:var(--surface);}
+  .phone-compose .input{flex:1; font-size:12px; padding:9px 12px; border-radius:999px;}
+  .send{width:36px; height:36px; border-radius:50%; background:var(--accent); color:var(--accent-fg); display:grid; place-items:center; flex-shrink:0;}
+
+  .components{display:grid; gap:14px; margin-top:24px;}
+  @media (min-width:720px){ .components{grid-template-columns:repeat(3,1fr);} }
+  .components .panel{display:flex; flex-direction:column; gap:12px;}
+  .components .row{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+
+  /* =========================================================
+     Tokens / export
+     ========================================================= */
+  .summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:18px;}
+  .sum-item{display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:14px; background:var(--surface);}
+  .sum-item .ico{width:42px; height:42px; border-radius:11px; flex-shrink:0; display:grid; place-items:center; overflow:hidden; background:var(--surface-2);}
+  .sum-item .k{display:block; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-soft);}
+  .sum-item .v{display:block; font-family:var(--font-ui); font-weight:700; font-size:13.5px;}
+  .code-card{border:1px solid var(--line); border-radius:16px; overflow:hidden; background:var(--surface);}
+  .code-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .code-bar .t{font-family:var(--font-mono); font-size:11.5px; color:var(--text-soft);}
+  .code-actions{display:flex; gap:8px;}
+  .code-actions button{cursor:pointer;}
+  pre{margin:0; padding:16px; overflow:auto; max-height:420px; font-family:var(--font-mono); font-size:12px; line-height:1.6; color:var(--text);}
+  pre .c{color:var(--text-soft);}
+  pre .p{color:var(--accent-text);}
+
+  /* reglas */
+  .usage-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px;}
+  .usage{border:1px solid var(--line); border-radius:16px; padding:18px; background:var(--surface); display:flex; flex-direction:column; gap:8px;}
+  .usage .k{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--text-soft);}
+  .usage .v{font-family:var(--font-ui); font-weight:700; font-size:15px;}
+  .usage p{margin:0; font-size:13px; color:var(--text-soft); line-height:1.5;}
+  .radius-row{display:flex; gap:8px; margin-top:4px;}
+  .radius-row i{width:28px; height:28px; background:var(--accent);}
+  .space-row{display:flex; align-items:flex-end; gap:6px; margin-top:4px;}
+  .space-row i{background:var(--accent-2); width:10px;}
+
+  footer{border-top:1px solid var(--line); margin-top:90px; padding:28px 0; font-family:var(--font-mono); font-size:11.5px; color:var(--text-soft);}
+  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+  /* =========================================================
+     Dock de selección
+     ========================================================= */
+  .dock{
+    position:fixed; left:50%; bottom:calc(12px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%);
+    z-index:50; width:min(640px, calc(100% - 20px));
+    display:flex; align-items:center; gap:6px; padding:6px;
+    background:color-mix(in oklch, var(--surface) 90%, transparent);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line); border-radius:18px;
+    box-shadow:0 18px 50px -18px rgba(0,0,0,.55);
+  }
+  .dock a{
+    flex:1; min-width:0; display:flex; align-items:center; gap:8px; text-decoration:none;
+    padding:7px 8px; border-radius:12px; transition:background-color .2s;
+  }
+  .dock a:hover{background:var(--surface-2);}
+  .dock .ico{width:30px; height:30px; border-radius:8px; flex-shrink:0; overflow:hidden; display:grid; place-items:center; background:var(--surface-2);}
+  .dock .ico svg{width:30px; height:30px;}
+  .dock .txt{min-width:0; line-height:1.15;}
+  .dock .k{display:block; font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft);}
+  .dock .v{display:block; font-family:var(--font-ui); font-weight:700; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .dots{display:flex; width:100%; height:100%;}
+  .dots i{flex:1;}
+  .aa{font-size:16px; line-height:1; color:var(--text);}
+  @media (max-width:520px){
+    .dock{gap:2px; padding:5px;}
+    .dock a{flex-direction:column; gap:4px; padding:6px 2px;}
+    .dock .txt{text-align:center; width:100%;}
+    .dock .v{font-size:10.5px;}
+    .dock .k{display:none;}
+  }
+  .flash{animation:flash .5s ease;}
+  @keyframes flash{0%{transform:scale(1);} 40%{transform:scale(1.08);} 100%{transform:scale(1);}}
+
+  .toast{
+    position:fixed; left:50%; bottom:calc(92px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px);
+    background:var(--text); color:var(--bg); font-family:var(--font-ui); font-weight:600; font-size:13px;
+    padding:10px 16px; border-radius:999px; opacity:0; pointer-events:none; transition:all .25s; z-index:60;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="Inicio">
+      <span data-mark="brand" data-size="24"></span>
+      <span>Blog <small>· Concept design</small></span>
+    </a>
+    <nav class="topnav" aria-label="Secciones">
+      <a href="#logo">Logo</a>
+      <a href="#color">Color</a>
+      <a href="#tipografia">Tipografía</a>
+      <a href="#patron">Patrón</a>
+      <a href="#preview">Vista previa</a>
+      <a href="#tokens">Tokens</a>
+      <a href="#reglas">Reglas</a>
+    </nav>
+    <button class="icon-btn" id="modeToggle" type="button" aria-label="Cambiar modo claro/oscuro">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Concept design · v3 · sep 2026</p>
+        <h1 class="disp">Escribir, publicar, conversar.</h1>
+        <p class="lead">
+          Un solo documento que reúne <b>logo</b>, <b>color</b>, <b>tipografía</b> y <b>patrón</b> del blog.
+          Cada categoría tiene alternativas reales: elige una tarjeta y todo el concept —
+          incluidas las pantallas de ejemplo y los tokens de código — se actualiza al instante.
+        </p>
+        <div class="hero-meta">
+          <div><span class="k">Producto</span><span class="v">Blog · Next.js + shadcn/ui</span></div>
+          <div><span class="k">Backend</span><span class="v">Node.js + Express</span></div>
+          <div><span class="k">Estado</span><span class="v">Sistema en revisión</span></div>
+        </div>
+        <div class="howto">
+          <span class="n">↓</span>
+          <span><b>Cómo usarlo:</b> toca una tarjeta en cada sección. Tu selección se guarda en este navegador y aparece en la barra inferior. Cambia entre modo claro y oscuro con el botón de arriba.</span>
+        </div>
+      </div>
+      <div class="hero-stage">
+        <div data-pattern></div>
+        <div class="hero-mark"><div><span data-mark="brand" data-size="200"></span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="strip" data-pattern role="presentation"></div>
+
+  <!-- ================= 01 LOGO ================= -->
+  <section id="logo">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">01 · Logotipo</span>
+        <h2 class="disp">Cuatro marcas, un mismo sistema</h2>
+        <p class="dek">Todas se dibujan con los tokens de la paleta activa, así que puedes ver cómo se comporta cada marca con cada color. Funcionan solas (favicon, avatar, sidebar colapsado) y en lockup con el nombre.</p>
+      </div>
+      <p class="swipe-hint">Desliza para ver más →</p>
+      <div class="opt-grid" role="radiogroup" aria-label="Logotipo" data-group="logo"></div>
+
+      <div class="sub-head"><h3>Especificación de la marca elegida</h3><span id="logoName"></span></div>
+      <div class="spec-grid">
+        <div class="panel">
+          <p class="panel-label">Sobre fondo oscuro / claro</p>
+          <div class="mark-stage">
+            <div class="on-ink"><span data-mark="brand" data-size="84"></span></div>
+            <div class="on-paper"><span data-mark="inverse" data-size="84"></span></div>
+          </div>
+          <p class="panel-label" style="margin-top:22px;">Espacio libre mínimo = ¼ del ancho</p>
+          <div class="clear"><span data-mark="clear"></span></div>
+          <ul class="rules">
+            <li><span class="x">✕</span> No añadir degradados, sombras ni contornos a la marca.</li>
+            <li><span class="x">✕</span> No deformar, rotar ni separar sus piezas internas.</li>
+            <li><span class="x">✕</span> No usar el lockup completo por debajo de 24px — solo la marca.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <p class="panel-label">Lockups</p>
+          <div class="lockups">
+            <div class="lockup"><span data-mark="brand" data-size="32"></span><span class="wm">Blog</span></div>
+            <div class="lockup light"><span data-mark="inverse" data-size="32"></span><span class="wm">Blog</span></div>
+            <div class="lockup stacked"><span data-mark="brand" data-size="40"></span><span class="wm">Blog</span></div>
+          </div>
+          <p class="panel-label" style="margin-top:22px;">Favicon y tamaños mínimos</p>
+          <div class="fav-strip">
+            <div class="fav-tab"><span data-mark="brand" data-size="14"></span>Blog — Inicio</div>
+            <div class="fav-size"><span data-mark="brand" data-size="16"></span>16</div>
+            <div class="fav-size"><span data-mark="brand" data-size="24"></span>24</div>
+            <div class="fav-size"><span data-mark="brand" data-size="32"></span>32</div>
+            <div class="fav-size"><span data-mark="brand" data-size="48"></span>48</div>
+          </div>
+          <p class="panel-label" style="margin-top:22px;">Dónde reemplazar en el código</p>
+          <p style="margin:0; font-size:13px; color:var(--text-soft); line-height:1.7;">
+            <code>components/layout/site-header.tsx</code> · <code>components/dashboard/dashboard-sidebar.tsx</code> · <code>app/(auth)/layout.tsx</code> · <code>app/favicon.ico</code>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 02 COLOR ================= -->
+  <section id="color">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">02 · Color</span>
+        <h2 class="disp">Un acento con función, neutros que no compiten</h2>
+        <p class="dek">El acento nunca es decorativo: marca la acción primaria, el estado activo y el foco. <b>Blue</b> y <b>Yellow</b> son temas de shadcn/ui; <b>Tinta violeta</b> es una propuesta con neutros tintados y un coral para destacados.</p>
+      </div>
+      <p class="swipe-hint">Desliza para ver más →</p>
+      <div class="opt-grid" role="radiogroup" aria-label="Paleta de color" data-group="color"></div>
+
+      <div class="sub-head"><h3>Tokens de la paleta elegida</h3><span id="colorModeLabel"></span></div>
+      <div class="token-grid" id="tokenGrid"></div>
+
+      <div class="mode-compare" id="modeCompare"></div>
+    </div>
+  </section>
+
+  <!-- ================= 03 TIPOGRAFÍA ================= -->
+  <section id="tipografia">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">03 · Tipografía</span>
+        <h2 class="disp">La voz de cada titular</h2>
+        <p class="dek">Lo que más cambia entre opciones es el carácter del título — lo primero que se lee de cada post. <b>Inter</b> se queda siempre a cargo de la interfaz (botones, navegación, cifras) y <b>JetBrains Mono</b> de los datos.</p>
+      </div>
+      <p class="swipe-hint">Desliza para ver más →</p>
+      <div class="opt-grid" role="radiogroup" aria-label="Tipografía" data-group="type"></div>
+
+      <div class="sub-head"><h3>Espécimen aplicado</h3><span id="typeFaces"></span></div>
+      <div class="specimen">
+        <div class="spec-role"><span class="n">Display · titulares</span><span class="s" id="specDisplay"></span></div>
+        <p class="spec-display disp">Historias, ideas y aprendizajes</p>
+      </div>
+      <div class="specimen">
+        <div class="spec-role"><span class="n">Cuerpo · lectura larga</span><span class="s" id="specBody"></span></div>
+        <p class="spec-body">En este artículo recorremos cómo construir la API del blog con Node.js y Express: autenticación, roles y permisos, paginación y un editor de contenido enriquecido que se siente cómodo tanto en escritorio como en el móvil.</p>
+      </div>
+      <div class="specimen">
+        <div class="spec-role"><span class="n">Datos · utilidades</span><span class="s">JetBrains Mono 400–500</span></div>
+        <p class="spec-mono">posts:edit:own · 24 sep 2026, 18:13 · <span id="specHex"></span></p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rol</th><th>Fuente</th><th>Tamaño</th><th>Peso</th><th>Muestra</th></tr></thead>
+          <tbody>
+            <tr><td>Display</td><td class="m" data-font="display"></td><td class="m">40–72px</td><td class="m" data-font="dweight"></td><td><span class="disp" style="font-size:calc(26px * var(--display-scale));">Blog</span></td></tr>
+            <tr><td>H1 de página</td><td class="m" data-font="display"></td><td class="m">28–40px</td><td class="m" data-font="dweight"></td><td><span class="disp" style="font-size:calc(20px * var(--display-scale));">Panel de posts</span></td></tr>
+            <tr><td>Título de tarjeta</td><td class="m" data-font="display"></td><td class="m">16–20px</td><td class="m" data-font="dweight"></td><td><span class="disp" style="font-size:calc(16px * var(--display-scale));">Mi primera API</span></td></tr>
+            <tr><td>Cuerpo</td><td class="m" data-font="body"></td><td class="m">15–17px</td><td class="m">400–500</td><td style="font-family:var(--font-body);">Contenido del post</td></tr>
+            <tr><td>Interfaz</td><td class="m">Inter</td><td class="m">12–14px</td><td class="m">600–700</td><td style="font-family:var(--font-ui); font-weight:700;">Guardar cambios</td></tr>
+            <tr><td>Etiqueta</td><td class="m">JetBrains Mono</td><td class="m">10–12px</td><td class="m">500</td><td class="mono" style="font-size:12px;">POSTS:CREATE</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 04 PATRÓN ================= -->
+  <section id="patron">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">04 · Patrón</span>
+        <h2 class="disp">La marca convertida en textura</h2>
+        <p class="dek">Cada patrón nace de uno de los logos. Se usa con moderación: portadas por defecto cuando un post no tiene imagen, estados vacíos y divisores de sección. <b>Nunca detrás de texto largo.</b></p>
+      </div>
+      <p class="swipe-hint">Desliza para ver más →</p>
+      <div class="opt-grid five" role="radiogroup" aria-label="Patrón" data-group="pattern"></div>
+
+      <div class="sub-head"><h3>Patrón elegido en uso</h3><span id="patternName"></span></div>
+      <div class="pat-uses">
+        <div class="use-card">
+          <div class="cover-demo" data-pattern>
+            <div class="chip"><span class="badge">Portada por defecto</span><p class="disp" style="margin-top:8px;">Post sin imagen de portada</p></div>
+          </div>
+          <div class="cap"><b>Uso denso</b><span>portadas · hero</span></div>
+        </div>
+        <div class="use-card">
+          <div class="empty-demo soft" data-pattern>
+            <div class="inner">
+              <span data-mark="brand" data-size="44"></span>
+              <p>Todavía no hay comentarios. ¡Empieza la conversación!</p>
+              <span class="btn sm">Comentar</span>
+            </div>
+          </div>
+          <div class="cap"><b>Uso sutil</b><span>estados vacíos</span></div>
+        </div>
+      </div>
+      <div class="use-card" style="margin-top:14px;">
+        <div class="divider-demo" data-pattern></div>
+        <div class="cap"><b>Divisor</b><span>entre secciones · 16–24px de alto</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 05 VISTA PREVIA ================= -->
+  <section id="preview">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">05 · Vista previa</span>
+        <h2 class="disp">Así se vería la app</h2>
+        <p class="dek">Pantallas de referencia construidas con tu selección actual: portada en escritorio y detalle de post en móvil. Cambia cualquier tarjeta y vuelve aquí.</p>
+      </div>
+
+      <div class="preview-grid">
+        <div class="browser">
+          <div class="browser-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="url">blog.local/</span></div>
+          <div class="app-head">
+            <span data-mark="brand" data-size="28"></span><span class="wm">Blog</span>
+            <div class="app-nav"><span>Inicio</span><span>Categorías</span><span>Acerca</span></div>
+            <span class="btn sm">+ Nuevo post</span>
+          </div>
+          <div class="app-hero" data-pattern>
+            <div class="app-hero-card">
+              <span class="badge hl">★ Destacado</span>
+              <h3 class="disp">Cómo construí la API del blog con Express</h3>
+              <p>Rutas, middlewares de autenticación y un sistema de roles que escala sin volverse un laberinto.</p>
+              <span class="btn">Leer artículo</span>
+            </div>
+          </div>
+          <div class="app-tools">
+            <div class="input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Buscar posts…</div>
+            <span class="chipf on">Todos</span><span class="chipf">Backend</span><span class="chipf">Frontend</span>
+          </div>
+          <div class="app-cards">
+            <article class="post">
+              <div class="post-cover" data-pattern></div>
+              <div class="post-body">
+                <span class="badge">Publicado</span>
+                <h4 class="disp">Mi primer monorepo con Next.js</h4>
+                <p>Frontend y backend en un mismo repositorio, sin dolores de cabeza.</p>
+                <div class="post-meta"><span class="avatar"></span>23 SEP · 6 MIN</div>
+              </div>
+            </article>
+            <article class="post">
+              <div class="post-cover solid"></div>
+              <div class="post-body">
+                <span class="badge neutral">Borrador</span>
+                <h4 class="disp">React Query sin misterios</h4>
+                <p>Caché, invalidación y estados de carga explicados con ejemplos reales.</p>
+                <div class="post-meta"><span class="avatar"></span>20 SEP · 8 MIN</div>
+              </div>
+            </article>
+            <article class="post">
+              <div class="post-cover mark"><span data-mark="brand" data-size="46"></span></div>
+              <div class="post-body">
+                <span class="badge hl">Nuevo</span>
+                <h4 class="disp">De MySQL a MongoDB</h4>
+                <p>Lo que cambia —y lo que no— al pasar de tablas a documentos.</p>
+                <div class="post-meta"><span class="avatar"></span>18 SEP · 5 MIN</div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="phone" aria-label="Vista móvil">
+          <div class="phone-screen">
+            <div class="phone-status"><span>12:37</span><span class="notch"></span><span>5G</span></div>
+            <div class="phone-head"><span data-mark="brand" data-size="24"></span><span class="wm">Blog</span><span class="back">← Volver</span></div>
+            <div class="phone-scroll">
+              <div class="phone-cover" data-pattern></div>
+              <div class="phone-article">
+                <span class="badge">Backend</span>
+                <h4 class="disp">Cómo construí la API del blog con Express</h4>
+                <div class="meta">STEVEN · 24 SEP 2026 · 7 MIN</div>
+                <p>Empecé con una idea simple: separar las rutas públicas de las del panel. Lo que parecía un detalle terminó definiendo toda la arquitectura.</p>
+              </div>
+              <div class="comment">
+                <span class="avatar"></span>
+                <div class="bubble"><b>Laura</b>¡Muy claro! ¿Harás una segunda parte sobre permisos?</div>
+              </div>
+            </div>
+            <div class="phone-compose">
+              <div class="input focus">Escribe un comentario<span class="caret"></span></div>
+              <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="components">
+        <div class="panel">
+          <p class="panel-label">Botones</p>
+          <div class="row"><span class="btn">Primario</span><span class="btn sec">Secundario</span></div>
+          <div class="row"><span class="btn out">Outline</span><span class="btn del">Eliminar</span></div>
+        </div>
+        <div class="panel">
+          <p class="panel-label">Estados y etiquetas</p>
+          <div class="row"><span class="badge">Publicado</span><span class="badge neutral">Borrador</span><span class="badge hl">Destacado</span></div>
+          <div class="row" style="justify-content:space-between;"><span style="font-size:13px;">Comentarios activos</span><span class="switch"></span></div>
+        </div>
+        <div class="panel">
+          <p class="panel-label">Campos</p>
+          <div class="input">tu@correo.com</div>
+          <div class="input focus">Contraseña<span class="caret" style="margin-left:2px;"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 06 TOKENS ================= -->
+  <section id="tokens">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">06 · Tokens</span>
+        <h2 class="disp">Tu selección, lista para el código</h2>
+        <p class="dek">Variables en formato <b>shadcn/ui</b> para pegar en <code>app/globals.css</code>, más las fuentes elegidas. Se regeneran cada vez que cambias una tarjeta.</p>
+      </div>
+      <div class="summary" id="summary"></div>
+      <div class="code-card">
+        <div class="code-bar">
+          <span class="t">app/globals.css</span>
+          <div class="code-actions">
+            <button class="btn sec sm" type="button" id="resetBtn">↺ Restablecer</button>
+            <button class="btn sm" type="button" id="copyBtn">Copiar CSS</button>
+          </div>
+        </div>
+        <pre id="cssOut"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 07 REGLAS ================= -->
+  <section id="reglas">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">07 · Reglas rápidas</span>
+        <h2 class="disp">Lo esencial, en una mirada</h2>
+      </div>
+      <div class="usage-grid">
+        <div class="usage"><span class="k">Radio de esquina</span><span class="v" id="radiusVal"></span>
+          <div class="radius-row"><i style="border-radius:calc(var(--radius) - 4px);"></i><i style="border-radius:var(--radius);"></i><i style="border-radius:calc(var(--radius) + 6px);"></i><i style="border-radius:999px;"></i></div>
+        </div>
+        <div class="usage"><span class="k">Espaciado</span><span class="v">Escala de 4px</span>
+          <div class="space-row"><i style="height:4px"></i><i style="height:8px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:24px"></i><i style="height:32px"></i></div>
+        </div>
+        <div class="usage"><span class="k">Iconografía</span><span class="v">Lucide · trazo 1.5–2px</span><p>Mismo grosor visual que las barras del logo en tamaños pequeños.</p></div>
+        <div class="usage"><span class="k">Modo por defecto</span><span class="v">Sigue al sistema</span><p>Ambos modos se diseñan a la par; ninguno es "secundario".</p></div>
+        <div class="usage"><span class="k">Acento</span><span class="v">Solo con función</span><p>Acción primaria, estado activo y foco. Máximo un botón primario por vista.</p></div>
+        <div class="usage"><span class="k">Responsive</span><span class="v">Mobile first</span><p>Objetivos táctiles de 44px mínimo; lectura a 15–17px en móvil.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Blog · Concept design unificado</span>
+    <span>Logo · color · tipografía · patrón · pantallas · tokens</span>
+  </div>
+</footer>
+
+<!-- ================= DOCK ================= -->
+<nav class="dock" aria-label="Tu selección">
+  <a href="#logo"><span class="ico" id="dockLogo"></span><span class="txt"><span class="k">Logo</span><span class="v" id="dockLogoV"></span></span></a>
+  <a href="#color"><span class="ico" id="dockColor"></span><span class="txt"><span class="k">Color</span><span class="v" id="dockColorV"></span></span></a>
+  <a href="#tipografia"><span class="ico" id="dockType"></span><span class="txt"><span class="k">Tipografía</span><span class="v" id="dockTypeV"></span></span></a>
+  <a href="#patron"><span class="ico" id="dockPat"></span><span class="txt"><span class="k">Patrón</span><span class="v" id="dockPatV"></span></span></a>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ======================== DATOS ======================== */
+  var LOGOS = [
+    {id:"hilo",   name:"Hilo de conversación", short:"Hilo",      tag:"Actual",
+     desc:"Líneas de texto que se resuelven en una cola de globo: el contenido se convierte en conversación."},
+    {id:"folded", name:"Página doblada",       short:"Página",    tag:"",
+     desc:"La esquina doblada de una hoja. El gesto más directo hacia “publicar”, sin depender de una letra."},
+    {id:"mono",   name:"Monograma geométrico", short:"Monograma", tag:"",
+     desc:"Una “B” propia construida con bloques redondeados. La opción más clásica y reconocible."},
+    {id:"cursor", name:"Cursor de escritura",  short:"Cursor",    tag:"",
+     desc:"Un cursor de texto con un punto: el instante justo antes de escribir. La más minimalista."}
+  ];
+
+  // Base neutra de shadcn/ui (compartida por Blue y Yellow)
+  var NL = {
+    "background":"oklch(1 0 0)","foreground":"oklch(0.145 0 0)",
+    "card":"oklch(1 0 0)","card-foreground":"oklch(0.145 0 0)",
+    "popover":"oklch(1 0 0)","popover-foreground":"oklch(0.145 0 0)",
+    "secondary":"oklch(0.967 0.001 286.375)","secondary-foreground":"oklch(0.21 0.006 285.885)",
+    "muted":"oklch(0.97 0 0)","muted-foreground":"oklch(0.556 0 0)",
+    "accent":"oklch(0.97 0 0)","accent-foreground":"oklch(0.205 0 0)",
+    "destructive":"oklch(0.577 0.245 27.325)",
+    "border":"oklch(0.922 0 0)","input":"oklch(0.922 0 0)","ring":"oklch(0.708 0 0)",
+    "sidebar":"oklch(0.985 0 0)","sidebar-foreground":"oklch(0.145 0 0)",
+    "sidebar-accent":"oklch(0.97 0 0)","sidebar-accent-foreground":"oklch(0.205 0 0)",
+    "sidebar-border":"oklch(0.922 0 0)","sidebar-ring":"oklch(0.708 0 0)"
+  };
+  var ND = {
+    "background":"oklch(0.145 0 0)","foreground":"oklch(0.985 0 0)",
+    "card":"oklch(0.205 0 0)","card-foreground":"oklch(0.985 0 0)",
+    "popover":"oklch(0.205 0 0)","popover-foreground":"oklch(0.985 0 0)",
+    "secondary":"oklch(0.274 0.006 286.033)","secondary-foreground":"oklch(0.985 0 0)",
+    "muted":"oklch(0.269 0 0)","muted-foreground":"oklch(0.708 0 0)",
+    "accent":"oklch(0.269 0 0)","accent-foreground":"oklch(0.985 0 0)",
+    "destructive":"oklch(0.704 0.191 22.216)",
+    "border":"oklch(1 0 0 / 10%)","input":"oklch(1 0 0 / 15%)","ring":"oklch(0.556 0 0)",
+    "sidebar":"oklch(0.205 0 0)","sidebar-foreground":"oklch(0.985 0 0)",
+    "sidebar-accent":"oklch(0.269 0 0)","sidebar-accent-foreground":"oklch(0.985 0 0)",
+    "sidebar-border":"oklch(1 0 0 / 10%)","sidebar-ring":"oklch(0.556 0 0)"
+  };
+  function ext(base, over){ var o={}, k; for(k in base) o[k]=base[k]; for(k in over) o[k]=over[k]; return o; }
+
+  // Construye un set completo shadcn a partir de pocos valores
+  function full(v){
+    return {
+      "background":v.bg,"foreground":v.fg,
+      "card":v.card,"card-foreground":v.fg,
+      "popover":v.card,"popover-foreground":v.fg,
+      "primary":v.primary,"primary-foreground":v.primaryFg,
+      "secondary":v.sec,"secondary-foreground":v.fg,
+      "muted":v.sec,"muted-foreground":v.mutedFg,
+      "accent":v.sec,"accent-foreground":v.fg,
+      "destructive":v.destructive,
+      "border":v.border,"input":v.input,"ring":v.ring,
+      "chart-1":v.charts[0],"chart-2":v.charts[1],"chart-3":v.charts[2],"chart-4":v.charts[3],"chart-5":v.charts[4],
+      "sidebar":v.sidebar,"sidebar-foreground":v.fg,
+      "sidebar-primary":v.sbPrimary,"sidebar-primary-foreground":v.sbPrimaryFg,
+      "sidebar-accent":v.sec,"sidebar-accent-foreground":v.fg,
+      "sidebar-border":v.border,"sidebar-ring":v.ring
+    };
+  }
+
+  var BLUE_CH = ["oklch(0.809 0.105 251.813)","oklch(0.623 0.214 259.815)","oklch(0.546 0.245 262.881)","oklch(0.488 0.243 264.376)","oklch(0.424 0.199 265.638)"];
+  var YEL_CH  = ["oklch(0.905 0.182 98.111)","oklch(0.795 0.184 86.047)","oklch(0.681 0.162 75.834)","oklch(0.554 0.135 66.442)","oklch(0.476 0.114 61.907)"];
+  function charts(arr){ return {"chart-1":arr[0],"chart-2":arr[1],"chart-3":arr[2],"chart-4":arr[3],"chart-5":arr[4]}; }
+
+  var PALETTES = [
+    {
+      id:"lima", name:"Lima sobre tinta", short:"Lima", tag:"Actual", radius:"0.45rem",
+      desc:"Casi-negro cálido y un lima puro como único acento. Directa, técnica y sin ruido.",
+      ink:"#0e0f0c", paper:"#faf9f4", bright:"#a6e22e",
+      swatches:["#0b0c09","#15160f","#a6e22e","#7cb518","#a7a89a","#faf9f4"],
+      light:{ accent2:"#7cb518", accentText:"#4f6f0c", highlight:"#4f6f0c",
+        t: full({bg:"#faf9f4",fg:"#16170f",card:"#ffffff",sec:"#f1f0e8",mutedFg:"#5b5c4e",
+          primary:"#a6e22e",primaryFg:"#0e0f0c",destructive:"#e2554f",border:"#e4e3d9",input:"#e4e3d9",ring:"#7cb518",
+          charts:["#d4f28a","#a6e22e","#7cb518","#5c7f10","#3d550b"],sidebar:"#f5f4ec",sbPrimary:"#7cb518",sbPrimaryFg:"#0e0f0c"}) },
+      dark:{ accent2:"#7cb518", accentText:"#a6e22e", highlight:"#a6e22e",
+        t: full({bg:"#0b0c09",fg:"#f5f4ee",card:"#15160f",sec:"#1e1f17",mutedFg:"#a7a89a",
+          primary:"#a6e22e",primaryFg:"#0e0f0c",destructive:"#e2554f",border:"rgba(255,255,255,.10)",input:"rgba(255,255,255,.15)",ring:"#7cb518",
+          charts:["#d4f28a","#a6e22e","#7cb518","#5c7f10","#3d550b"],sidebar:"#15160f",sbPrimary:"#a6e22e",sbPrimaryFg:"#0e0f0c"}) }
+    },
+    {
+      id:"blue", name:"Blue", short:"Blue", tag:"shadcn", radius:"0.625rem",
+      desc:"Azul sobre neutros puros. Confiable y muy legible; la opción de menor riesgo y menos personalidad propia.",
+      ink:"oklch(0.145 0 0)", paper:"oklch(0.985 0 0)", bright:"oklch(0.623 0.214 259.815)",
+      swatches:["oklch(0.145 0 0)","oklch(0.205 0 0)","oklch(0.488 0.243 264.376)","oklch(0.623 0.214 259.815)","oklch(0.809 0.105 251.813)","oklch(1 0 0)"],
+      light:{ accent2:"oklch(0.623 0.214 259.815)", accentText:"oklch(0.488 0.243 264.376)", highlight:"oklch(0.488 0.243 264.376)",
+        t: ext(ext(NL, charts(BLUE_CH)), {"primary":"oklch(0.488 0.243 264.376)","primary-foreground":"oklch(0.97 0.014 254.604)",
+          "sidebar-primary":"oklch(0.546 0.245 262.881)","sidebar-primary-foreground":"oklch(0.97 0.014 254.604)"}) },
+      dark:{ accent2:"oklch(0.623 0.214 259.815)", accentText:"oklch(0.809 0.105 251.813)", highlight:"oklch(0.809 0.105 251.813)",
+        t: ext(ext(ND, charts(BLUE_CH)), {"primary":"oklch(0.424 0.199 265.638)","primary-foreground":"oklch(0.97 0.014 254.604)",
+          "sidebar-primary":"oklch(0.623 0.214 259.815)","sidebar-primary-foreground":"oklch(0.97 0.014 254.604)"}) }
+    },
+    {
+      id:"yellow", name:"Yellow", short:"Yellow", tag:"shadcn", radius:"0.625rem",
+      desc:"Amarillo cálido con texto café sobre el botón. Enérgico; brilla en oscuro y pide cuidado de contraste en claro.",
+      ink:"oklch(0.145 0 0)", paper:"oklch(0.985 0 0)", bright:"oklch(0.852 0.199 91.936)",
+      swatches:["oklch(0.145 0 0)","oklch(0.205 0 0)","oklch(0.852 0.199 91.936)","oklch(0.681 0.162 75.834)","oklch(0.421 0.095 57.708)","oklch(1 0 0)"],
+      light:{ accent2:"oklch(0.681 0.162 75.834)", accentText:"oklch(0.554 0.135 66.442)", highlight:"oklch(0.554 0.135 66.442)",
+        t: ext(ext(NL, charts(YEL_CH)), {"primary":"oklch(0.852 0.199 91.936)","primary-foreground":"oklch(0.421 0.095 57.708)",
+          "sidebar-primary":"oklch(0.681 0.162 75.834)","sidebar-primary-foreground":"oklch(0.987 0.026 102.212)"}) },
+      dark:{ accent2:"oklch(0.681 0.162 75.834)", accentText:"oklch(0.905 0.182 98.111)", highlight:"oklch(0.905 0.182 98.111)",
+        t: ext(ext(ND, charts(YEL_CH)), {"primary":"oklch(0.795 0.184 86.047)","primary-foreground":"oklch(0.421 0.095 57.708)",
+          "sidebar-primary":"oklch(0.795 0.184 86.047)","sidebar-primary-foreground":"oklch(0.987 0.026 102.212)"}) }
+    },
+    {
+      id:"violeta", name:"Tinta violeta", short:"Violeta", tag:"Propuesta", radius:"0.625rem",
+      desc:"Neutros con un leve tinte violeta, violeta como acento y coral para destacados. Editorial y con identidad propia.",
+      ink:"oklch(0.16 0.015 285)", paper:"oklch(0.985 0.005 285)", bright:"oklch(0.7 0.17 293)",
+      swatches:["oklch(0.16 0.015 285)","oklch(0.205 0.018 285)","oklch(0.55 0.22 293)","oklch(0.7 0.17 293)","oklch(0.72 0.16 35)","oklch(0.985 0.005 285)"],
+      light:{ accent2:"oklch(0.7 0.17 293)", accentText:"oklch(0.5 0.21 293)", highlight:"oklch(0.58 0.17 35)",
+        t: full({bg:"oklch(0.985 0.005 285)",fg:"oklch(0.18 0.02 285)",card:"oklch(1 0 0)",sec:"oklch(0.96 0.01 285)",mutedFg:"oklch(0.5 0.03 285)",
+          primary:"oklch(0.55 0.22 293)",primaryFg:"oklch(0.985 0 0)",destructive:"oklch(0.577 0.245 27.325)",border:"oklch(0.91 0.01 285)",input:"oklch(0.91 0.01 285)",ring:"oklch(0.7 0.15 293)",
+          charts:["oklch(0.85 0.08 293)","oklch(0.7 0.17 293)","oklch(0.55 0.22 293)","oklch(0.72 0.16 35)","oklch(0.6 0.17 35)"],
+          sidebar:"oklch(0.97 0.008 285)",sbPrimary:"oklch(0.55 0.22 293)",sbPrimaryFg:"oklch(0.985 0 0)"}) },
+      dark:{ accent2:"oklch(0.55 0.22 293)", accentText:"oklch(0.78 0.13 293)", highlight:"oklch(0.76 0.14 38)",
+        t: full({bg:"oklch(0.16 0.015 285)",fg:"oklch(0.97 0.005 285)",card:"oklch(0.205 0.018 285)",sec:"oklch(0.25 0.02 285)",mutedFg:"oklch(0.72 0.02 285)",
+          primary:"oklch(0.7 0.17 293)",primaryFg:"oklch(0.16 0.015 285)",destructive:"oklch(0.704 0.191 22.216)",border:"oklch(1 0 0 / 10%)",input:"oklch(1 0 0 / 15%)",ring:"oklch(0.55 0.22 293)",
+          charts:["oklch(0.85 0.08 293)","oklch(0.7 0.17 293)","oklch(0.55 0.22 293)","oklch(0.72 0.16 35)","oklch(0.6 0.17 35)"],
+          sidebar:"oklch(0.205 0.018 285)",sbPrimary:"oklch(0.7 0.17 293)",sbPrimaryFg:"oklch(0.16 0.015 285)"}) }
+    }
+  ];
+
+  var TYPES = [
+    {id:"inter", name:"Inter + Raleway", short:"Inter", tag:"Actual",
+     desc:"Geométrica y neutra. Prioriza la interfaz sobre la personalidad editorial.",
+     display:'"Inter", ui-sans-serif, system-ui, sans-serif', dname:"Inter", dw:800, ds:"normal", dt:"-0.03em", scale:1,
+     body:'"Raleway", ui-sans-serif, system-ui, sans-serif', bname:"Raleway"},
+    {id:"fraunces", name:"Fraunces + Raleway", short:"Fraunces", tag:"",
+     desc:"Serif display con carácter en itálica: se siente escrito, no generado.",
+     display:'"Fraunces", Georgia, serif', dname:"Fraunces Italic", dw:600, ds:"italic", dt:"-0.01em", scale:1,
+     body:'"Raleway", ui-sans-serif, system-ui, sans-serif', bname:"Raleway"},
+    {id:"space", name:"Space Grotesk + Literata", short:"Space", tag:"",
+     desc:"Titular anguloso con un serif de lectura pensado para pantalla. El par con más contraste.",
+     display:'"Space Grotesk", ui-sans-serif, system-ui, sans-serif', dname:"Space Grotesk", dw:700, ds:"normal", dt:"-0.02em", scale:1,
+     body:'"Literata", Georgia, serif', bname:"Literata"},
+    {id:"instrument", name:"Instrument Serif + Raleway", short:"Instrument", tag:"",
+     desc:"Serif fino y elegante, casi de invitación. El ajuste más discreto y refinado.",
+     display:'"Instrument Serif", Georgia, serif', dname:"Instrument Serif", dw:400, ds:"normal", dt:"0em", scale:1.14,
+     body:'"Raleway", ui-sans-serif, system-ui, sans-serif', bname:"Raleway"}
+  ];
+
+  var PATTERNS = [
+    {id:"ruled",    name:"Líneas del hilo",       short:"Líneas",   tag:"Actual", origin:"Hilo de conversación",
+     desc:"Las barras del logo repetidas en horizontal. Sobria y editorial."},
+    {id:"grid",     name:"Cuadrícula de pliegues", short:"Pliegues", tag:"",       origin:"Página doblada",
+     desc:"El pliegue en una malla regular. La más “de marca”."},
+    {id:"stack",    name:"Pila de papel",          short:"Pila",     tag:"",       origin:"Página doblada",
+     desc:"Diagonales finas como el canto de hojas apiladas."},
+    {id:"confetti", name:"Confeti de esquinas",    short:"Confeti",  tag:"",       origin:"Página doblada",
+     desc:"Pliegues sueltos a mitad de giro. Ideal para estados vacíos."},
+    {id:"waves",    name:"Ondas de contorno",      short:"Ondas",    tag:"",       origin:"Página doblada",
+     desc:"El eco circular de una página al doblarse. Casi textura."}
+  ];
+
+  var DEFAULTS = {logo:"hilo", color:"lima", type:"inter", pattern:"ruled"};
+  var KEY = "blog-concept-v3";
+  var state = {logo:DEFAULTS.logo, color:DEFAULTS.color, type:DEFAULTS.type, pattern:DEFAULTS.pattern, mode:null};
+
+  function find(list, id){ for(var i=0;i<list.length;i++){ if(list[i].id===id) return list[i]; } return list[0]; }
+  function $(s, r){ return (r||document).querySelector(s); }
+  function $$(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+
+  /* ======================== LOGOS (SVG) ======================== */
+  var TILE = '<rect width="96" height="96" rx="22" fill="{T}"/>';
+  var TILE_CUT = '<path d="M22 0 H74 L96 22 V74 A22 22 0 0 1 74 96 H22 A22 22 0 0 1 0 74 V22 A22 22 0 0 1 22 0 Z" fill="{T}"/>';
+  function glyph(id, g, f){
+    switch(id){
+      case "folded": return '<path d="M74 0 L96 22 L74 22 Z" fill="'+f+'"/>';
+      case "mono": return '<rect x="30" y="24" width="14" height="48" rx="7" fill="'+g+'"/><path d="M40 24 h10 a13 13 0 0 1 0 26 h-10 z" fill="'+g+'"/><path d="M40 50 h12 a13 13 0 0 1 0 26 h-12 z" fill="'+g+'"/>';
+      case "cursor": return '<rect x="41" y="22" width="14" height="42" rx="7" fill="'+g+'"/><circle cx="63" cy="70" r="9" fill="'+g+'"/>';
+      default: return '<rect x="24" y="30" width="48" height="10" rx="5" fill="'+g+'"/><rect x="24" y="48" width="36" height="10" rx="5" fill="'+g+'"/><path d="M24 58 v10 l10 -10 z" fill="'+g+'"/>';
+    }
+  }
+  var VARIANTS = {
+    brand:   {t:"var(--accent)", g:"var(--accent-fg)",   f:"var(--accent-2)"},
+    inverse: {t:"var(--ink)",    g:"var(--brand-bright)", f:"var(--brand-bright)"}
+  };
+  function markSVG(id, variant, size){
+    var v = VARIANTS[variant] || VARIANTS.brand;
+    var tile = (id==="folded" ? TILE_CUT : TILE).replace("{T}", v.t);
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 96 96" aria-hidden="true" style="display:block">'+tile+glyph(id, v.g, v.f)+'</svg>';
+  }
+  function clearSVG(id){
+    var v = VARIANTS.brand;
+    var tile = (id==="folded" ? TILE_CUT : TILE).replace("{T}", v.t);
+    return '<svg width="128" height="128" viewBox="0 0 144 144" aria-hidden="true"><g transform="translate(24 24)">'+tile+glyph(id, v.g, v.f)+'</g>'+
+      '<rect x=".5" y=".5" width="143" height="143" fill="none" stroke="var(--text-soft)" stroke-opacity=".5" stroke-dasharray="4 5"/>'+
+      '<rect x=".5" y=".5" width="23" height="23" fill="var(--accent-text)" fill-opacity=".18"/>'+
+      '<text x="12" y="15.5" font-size="9" text-anchor="middle" fill="var(--text-soft)" font-family="JetBrains Mono, monospace">¼</text></svg>';
+  }
+
+  /* ======================== CSS VARS ======================== */
+  function varsFor(p, mode){
+    var m = p[mode], t = m.t;
+    return {
+      "--bg":t["background"], "--surface":t["card"], "--surface-2":t["secondary"],
+      "--text":t["foreground"], "--text-soft":t["muted-foreground"], "--line":t["border"],
+      "--accent":t["primary"], "--accent-fg":t["primary-foreground"],
+      "--accent-2":m.accent2, "--accent-text":m.accentText, "--highlight":m.highlight,
+      "--destructive":t["destructive"], "--ring":t["ring"],
+      "--ink":p.ink, "--paper":p.paper, "--brand-bright":p.bright, "--radius":p.radius
+    };
+  }
+  function styleStr(vars){ var s="", k; for(k in vars) s += k+":"+vars[k]+";"; return s; }
+
+  /* ======================== RENDER DE TARJETAS ======================== */
+  var CHECK = '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
+  function pill(tag){ return tag ? '<span class="pill">'+tag+'</span>' : ''; }
+  function head(o){
+    return '<div class="opt-top"><div><p class="opt-name">'+o.name+'</p><p class="opt-desc">'+o.desc+'</p></div>'+CHECK+'</div>';
+  }
+
+  function renderLogoCards(){
+    $('[data-group="logo"]').innerHTML = LOGOS.map(function(o){
+      return '<button class="opt" type="button" role="radio" data-id="'+o.id+'">'+ head(o) +
+        '<div class="logo-tiles"><div class="on-ink">'+markSVG(o.id,"brand",60)+'</div><div class="on-paper">'+markSVG(o.id,"inverse",60)+'</div></div>'+
+        '<div class="opt-foot"><span class="tag">Marca + lockup</span>'+pill(o.tag)+'</div></button>';
+    }).join("");
+  }
+
+  function renderColorCards(){
+    $('[data-group="color"]').innerHTML = PALETTES.map(function(p){
+      function mini(mode, label){
+        return '<div class="mini" style="'+styleStr(varsFor(p,mode))+'"><span class="mode">'+label+'</span>'+
+          '<div class="row"><span class="btn sm">Nuevo post</span><span class="badge'+(p.id==="violeta"?" hl":"")+'">'+(p.id==="violeta"?"Destacado":"Publicado")+'</span></div></div>';
+      }
+      return '<button class="opt" type="button" role="radio" data-id="'+p.id+'">'+ head(p) +
+        '<div class="swatch-row">'+p.swatches.map(function(c){return '<i style="background:'+c+'"></i>';}).join("")+'</div>'+
+        '<div class="mini-pair">'+mini("dark","Oscuro")+mini("light","Claro")+'</div>'+
+        '<div class="opt-foot"><span class="tag">radius '+p.radius+'</span>'+pill(p.tag)+'</div></button>';
+    }).join("");
+  }
+
+  function renderTypeCards(){
+    $('[data-group="type"]').innerHTML = TYPES.map(function(t){
+      return '<button class="opt" type="button" role="radio" data-id="'+t.id+'">'+ head(t) +
+        '<p class="type-sample" style="--s:'+t.scale+';font-family:'+t.display.replace(/"/g,"'")+';font-weight:'+t.dw+';font-style:'+t.ds+';letter-spacing:'+t.dt+';">Construyendo un blog moderno</p>'+
+        '<p class="type-body" style="font-family:'+t.body.replace(/"/g,"'")+';">Exploramos cómo construir una API de blog completa con Node.js y Express.</p>'+
+        '<div class="opt-foot"><span class="tag">'+t.dname+' '+t.dw+' · '+t.bname+'</span>'+pill(t.tag)+'</div></button>';
+    }).join("");
+  }
+
+  function renderPatternCards(){
+    $('[data-group="pattern"]').innerHTML = PATTERNS.map(function(p){
+      return '<button class="opt" type="button" role="radio" data-id="'+p.id+'">'+ head(p) +
+        '<div class="pat-box pat-'+p.id+'"></div>'+
+        '<div class="opt-foot"><span class="tag">Nace de: '+p.origin+'</span>'+pill(p.tag)+'</div></button>';
+    }).join("");
+  }
+
+  /* ======================== APLICAR SELECCIÓN ======================== */
+  function applyAll(changed){
+    var root = document.documentElement;
+    var pal = find(PALETTES, state.color), ty = find(TYPES, state.type);
+    var lg = find(LOGOS, state.logo), pt = find(PATTERNS, state.pattern);
+    var mode = state.mode;
+
+    root.setAttribute("data-mode", mode);
+    var vars = varsFor(pal, mode), k;
+    for(k in vars) root.style.setProperty(k, vars[k]);
+    root.style.setProperty("--font-display", ty.display);
+    root.style.setProperty("--font-body", ty.body);
+    root.style.setProperty("--display-weight", ty.dw);
+    root.style.setProperty("--display-style", ty.ds);
+    root.style.setProperty("--display-tracking", ty.dt);
+    root.style.setProperty("--display-scale", ty.scale);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if(!meta){ meta = document.createElement("meta"); meta.name="theme-color"; document.head.appendChild(meta); }
+    meta.content = vars["--bg"];
+
+    // radios
+    ["logo","color","type","pattern"].forEach(function(g){
+      $$('[data-group="'+g+'"] .opt').forEach(function(b){
+        var on = b.getAttribute("data-id") === state[g];
+        b.setAttribute("aria-checked", on ? "true" : "false");
+        b.tabIndex = on ? 0 : -1;
+      });
+    });
+
+    // marcas en vivo
+    $$("[data-mark]").forEach(function(el){
+      var v = el.getAttribute("data-mark");
+      if(v==="clear"){ el.innerHTML = clearSVG(state.logo); return; }
+      el.innerHTML = markSVG(state.logo, v, parseInt(el.getAttribute("data-size"),10) || 32);
+      if(el.parentNode && el.parentNode.parentNode && el.parentNode.parentNode.classList.contains("hero-mark")){
+        var s = el.querySelector("svg"); s.removeAttribute("width"); s.removeAttribute("height");
+      }
+    });
+
+    // patrones en vivo
+    $$("[data-pattern]").forEach(function(el){
+      PATTERNS.forEach(function(p){ el.classList.remove("pat-"+p.id); });
+      el.classList.add("pat-"+state.pattern);
+    });
+
+    // textos informativos
+    $("#logoName").textContent = lg.name;
+    $("#patternName").textContent = pt.name + " · nace de " + pt.origin;
+    $("#colorModeLabel").textContent = pal.name + " · modo " + (mode==="dark" ? "oscuro" : "claro");
+    $("#typeFaces").textContent = ty.name;
+    $("#specDisplay").textContent = ty.dname + " " + ty.dw + " · tracking " + ty.dt;
+    $("#specBody").textContent = ty.bname + " 400–500 · 17px / 1.65";
+    $("#specHex").textContent = pal[mode].t["primary"];
+    $$('[data-font="display"]').forEach(function(e){ e.textContent = ty.dname; });
+    $$('[data-font="body"]').forEach(function(e){ e.textContent = ty.bname; });
+    $$('[data-font="dweight"]').forEach(function(e){ e.textContent = ty.dw; });
+    $("#radiusVal").textContent = pal.radius + " base";
+
+    renderTokens(pal, mode);
+    renderModeCompare(pal);
+    renderDock(lg, pal, ty, pt, changed);
+    renderSummary(lg, pal, ty, pt);
+    $("#cssOut").innerHTML = highlight(buildCSS(pal, ty));
+
+    save();
+  }
+
+  function renderTokens(pal, mode){
+    var m = pal[mode], t = m.t;
+    var list = [
+      ["Primario", t["primary"], "Botones, foco, enlace activo"],
+      ["Texto sobre primario", t["primary-foreground"], "Contenido dentro del botón"],
+      ["Acento 2", m.accent2, "Hover, pliegue del logo, gráficos"],
+      ["Fondo", t["background"], "Lienzo de la página"],
+      ["Superficie", t["card"], "Tarjetas, popovers"],
+      ["Secundario", t["secondary"], "Botones secundarios, hover"],
+      ["Texto", t["foreground"], "Títulos y cuerpo"],
+      ["Texto suave", t["muted-foreground"], "Metadatos, descripciones"],
+      ["Borde", t["border"], "Divisores, inputs"],
+      ["Destructivo", t["destructive"], "Eliminar, errores"]
+    ];
+    $("#tokenGrid").innerHTML = list.map(function(r){
+      return '<div class="token"><div class="token-color" style="background:'+r[1]+'"></div><div class="token-info"><p class="token-name">'+r[0]+'</p><p class="token-val">'+r[1]+'</p><p class="token-role">'+r[2]+'</p></div></div>';
+    }).join("");
+  }
+
+  function renderModeCompare(pal){
+    function card(mode, label){
+      return '<div class="mode-card" style="'+styleStr(varsFor(pal,mode))+'">'+
+        '<span class="panel-label" style="margin:0;">'+label+'</span>'+
+        '<div class="row"><span class="btn">Nuevo post</span><span class="btn sec">Cancelar</span><span class="badge">Publicado</span><span class="badge hl">Destacado</span></div>'+
+        '<div class="post" style="flex-direction:row;"><div class="post-cover" style="width:92px;height:auto;min-height:84px;flex-shrink:0;" data-pattern></div>'+
+        '<div class="post-body"><h4 class="disp">Título del post</h4><p>Autor · 24 sep · 6 min</p></div></div>'+
+        '<div class="input focus">Buscar<span class="caret" style="margin-left:2px;"></span></div></div>';
+    }
+    $("#modeCompare").innerHTML = card("dark","Modo oscuro") + card("light","Modo claro");
+    $$("#modeCompare [data-pattern]").forEach(function(el){ el.className = "post-cover pat-"+state.pattern; });
+  }
+
+  function renderDock(lg, pal, ty, pt, changed){
+    $("#dockLogo").innerHTML = markSVG(lg.id, "brand", 30);
+    $("#dockLogoV").textContent = lg.short;
+    $("#dockColor").innerHTML = '<span class="dots">'+[pal.swatches[0],pal.swatches[2],pal.swatches[3]].map(function(c){return '<i style="background:'+c+'"></i>';}).join("")+'</span>';
+    $("#dockColorV").textContent = pal.short;
+    $("#dockType").innerHTML = '<span class="aa disp">Aa</span>';
+    $("#dockTypeV").textContent = ty.short;
+    $("#dockPat").innerHTML = '<span class="pat-'+pt.id+'" style="display:block;width:100%;height:100%;"></span>';
+    $("#dockPatV").textContent = pt.short;
+    if(changed){
+      var map = {logo:"#dockLogo", color:"#dockColor", type:"#dockType", pattern:"#dockPat"};
+      var el = $(map[changed]);
+      if(el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+    }
+  }
+
+  function renderSummary(lg, pal, ty, pt){
+    var items = [
+      ["Logo", lg.name, markSVG(lg.id,"brand",42)],
+      ["Color", pal.name, '<span class="dots">'+pal.swatches.slice(0,4).map(function(c){return '<i style="background:'+c+'"></i>';}).join("")+'</span>'],
+      ["Tipografía", ty.name, '<span class="aa disp" style="font-size:20px;">Aa</span>'],
+      ["Patrón", pt.name, '<span class="pat-'+pt.id+'" style="display:block;width:100%;height:100%;"></span>']
+    ];
+    $("#summary").innerHTML = items.map(function(i){
+      return '<div class="sum-item"><span class="ico">'+i[2]+'</span><span><span class="k">'+i[0]+'</span><span class="v">'+i[1]+'</span></span></div>';
+    }).join("");
+  }
+
+  /* ======================== EXPORT CSS ======================== */
+  var ORDER = ["background","foreground","card","card-foreground","popover","popover-foreground",
+    "primary","primary-foreground","secondary","secondary-foreground","muted","muted-foreground",
+    "accent","accent-foreground","destructive","border","input","ring",
+    "chart-1","chart-2","chart-3","chart-4","chart-5",
+    "sidebar","sidebar-foreground","sidebar-primary","sidebar-primary-foreground",
+    "sidebar-accent","sidebar-accent-foreground","sidebar-border","sidebar-ring"];
+
+  function buildCSS(pal, ty){
+    var lg = find(LOGOS, state.logo), pt = find(PATTERNS, state.pattern);
+    var out = "/* Blog · "+lg.name+" · "+pal.name+" · "+ty.name+" · "+pt.name+" */\n\n";
+    out += ":root {\n  --radius: "+pal.radius+";\n";
+    out += "  --font-display: "+ty.display+";\n  --font-body: "+ty.body+";\n  --font-ui: \"Inter\", ui-sans-serif, system-ui, sans-serif;\n  --font-mono: \"JetBrains Mono\", ui-monospace, monospace;\n\n";
+    ORDER.forEach(function(k){ out += "  --"+k+": "+pal.light.t[k]+";\n"; });
+    out += "\n  /* marca */\n  --brand-accent-2: "+pal.light.accent2+";\n  --brand-accent-text: "+pal.light.accentText+";\n";
+    out += "}\n\n.dark {\n";
+    ORDER.forEach(function(k){ out += "  --"+k+": "+pal.dark.t[k]+";\n"; });
+    out += "\n  /* marca */\n  --brand-accent-2: "+pal.dark.accent2+";\n  --brand-accent-text: "+pal.dark.accentText+";\n";
+    out += "}\n";
+    return out;
+  }
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function highlight(css){
+    return esc(css)
+      .replace(/(\/\*[\s\S]*?\*\/)/g,'<span class="c">$1</span>')
+      .replace(/(--[a-z0-9-]+)(:)/g,'<span class="p">$1</span>$2');
+  }
+
+  /* ======================== PERSISTENCIA ======================== */
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function load(){
+    try{
+      var s = JSON.parse(localStorage.getItem(KEY) || "null");
+      if(s){ ["logo","color","type","pattern","mode"].forEach(function(k){ if(s[k]) state[k]=s[k]; }); }
+    }catch(e){}
+    if(state.mode!=="dark" && state.mode!=="light"){
+      state.mode = (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+    }
+  }
+
+  function toast(msg){
+    var t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ======================== EVENTOS ======================== */
+  function bind(){
+    $$("[data-group]").forEach(function(group){
+      var g = group.getAttribute("data-group");
+      group.addEventListener("click", function(e){
+        var b = e.target.closest(".opt"); if(!b) return;
+        state[g] = b.getAttribute("data-id");
+        applyAll(g);
+      });
+      group.addEventListener("keydown", function(e){
+        var keys = {ArrowRight:1, ArrowDown:1, ArrowLeft:-1, ArrowUp:-1};
+        if(!keys[e.key]) return;
+        e.preventDefault();
+        var opts = $$(".opt", group), i = opts.indexOf(document.activeElement);
+        var n = opts[(i + keys[e.key] + opts.length) % opts.length];
+        state[g] = n.getAttribute("data-id"); applyAll(g); n.focus();
+        n.scrollIntoView({block:"nearest", inline:"nearest", behavior:"smooth"});
+      });
+    });
+    $("#modeToggle").addEventListener("click", function(){
+      state.mode = state.mode==="dark" ? "light" : "dark"; applyAll();
+    });
+    $("#copyBtn").addEventListener("click", function(){
+      var txt = buildCSS(find(PALETTES,state.color), find(TYPES,state.type));
+      function fallback(){
+        var ta=document.createElement("textarea"); ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand("copy"); toast("CSS copiado"); }catch(e){ toast("No se pudo copiar"); }
+        document.body.removeChild(ta);
+      }
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt).then(function(){ toast("CSS copiado"); }, fallback);
+      } else fallback();
+    });
+    $("#resetBtn").addEventListener("click", function(){
+      state.logo=DEFAULTS.logo; state.color=DEFAULTS.color; state.type=DEFAULTS.type; state.pattern=DEFAULTS.pattern;
+      applyAll(); toast("Selección restablecida");
+    });
+  }
+
+  load();
+  renderLogoCards(); renderColorCards(); renderTypeCards(); renderPatternCards();
+  bind();
+  applyAll();
+})();
+</script>
+</body>
+</html>
