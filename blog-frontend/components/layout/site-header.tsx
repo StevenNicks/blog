@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LayoutDashboardIcon, LogOutIcon, PenLineIcon, UserIcon } from "lucide-react"
+import { LayoutDashboardIcon, LogOutIcon, PenLineIcon, UserIcon, UserRoundIcon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
@@ -50,9 +50,9 @@ export function SiteHeader() {
           {status === "loading" ? null : status === "unauthenticated" ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" asChild>
+                <Button variant="outline" size="icon" className="rounded-full" asChild>
                   <Link href="/login" aria-label="Iniciar sesión">
-                    <UserIcon />
+                    <UserRoundIcon />
                   </Link>
                 </Button>
               </TooltipTrigger>
@@ -61,7 +61,7 @@ export function SiteHeader() {
           ) : (
             <div className="flex items-center gap-2">
               {canWrite ? (
-                <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
+                <Button variant="outline" size="sm" asChild className="hidden rounded-full sm:inline-flex">
                   <Link href="/dashboard/posts/new">
                     <PenLineIcon data-icon="inline-start" />
                     Nuevo post

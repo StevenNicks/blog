@@ -150,7 +150,8 @@ function UsersTable() {
             </TableHeader>
             <TableBody>
               {users.map((user) => {
-                const isSelf = user._id === currentUser?._id
+                // La cuenta admin (propietario) no se puede editar, y el rol admin no se ofrece a nadie más
+                const isLocked = user._id === currentUser?._id || user.role.name === "admin"
                 return (
                   <TableRow key={user._id}>
                     <TableCell>
@@ -166,18 +167,20 @@ function UsersTable() {
                       <Select
                         value={user.role._id}
                         onValueChange={(roleId) => handleRoleChange(user, roleId)}
-                        disabled={isSelf}
+                        disabled={isLocked}
                       >
                         <SelectTrigger className="w-36">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            {roles.map((role) => (
-                              <SelectItem key={role._id} value={role._id}>
-                                {role.name}
-                              </SelectItem>
-                            ))}
+                            {roles
+                              .filter((role) => role.name !== "admin" || user.role.name === "admin")
+                              .map((role) => (
+                                <SelectItem key={role._id} value={role._id}>
+                                  {role.name}
+                                </SelectItem>
+                              ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -185,7 +188,7 @@ function UsersTable() {
                     <TableCell>
                       <Switch
                         checked={user.isActive}
-                        disabled={isSelf}
+                        disabled={isLocked}
                         onCheckedChange={(checked) => handleActiveChange(user, checked)}
                       />
                     </TableCell>
@@ -193,7 +196,7 @@ function UsersTable() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-sm" disabled={isSelf}>
+                          <Button variant="ghost" size="icon-sm" disabled={isLocked}>
                             <MoreHorizontalIcon />
                           </Button>
                         </DropdownMenuTrigger>

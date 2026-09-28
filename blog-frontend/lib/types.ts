@@ -61,7 +61,8 @@ export type CommentStatus = "pending" | "approved" | "spam"
 export interface Comment {
   _id: string
   post: string
-  author: Pick<User, "_id" | "name" | "avatar">
+  // null si la cuenta del autor fue eliminada
+  author: Pick<User, "_id" | "name" | "avatar"> | null
   content: string
   parentComment: string | null
   status: CommentStatus
@@ -106,3 +107,12 @@ export const PERMISSIONS = [
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
+
+export const BACKGROUND_PATTERNS = ["dot-grid", "grid", "none"] as const
+
+export type BackgroundPattern = (typeof BACKGROUND_PATTERNS)[number]
+
+export interface SiteSettings {
+  backgroundPattern: BackgroundPattern
+  updatedAt: string
+}

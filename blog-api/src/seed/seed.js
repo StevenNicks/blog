@@ -79,6 +79,18 @@ const run = async () => {
     console.log('El usuario admin ya existe, se omite su creación.');
   }
 
+  // Solo la cuenta SEED_ADMIN_EMAIL puede ser admin: cualquier otra pasa a reader
+  const adminRole = await Role.findOne({ name: 'admin' });
+  const readerRole = await Role.findOne({ name: 'reader' });
+  await User.updateOne({ email: adminEmail }, { role: adminRole._id });
+  const demoted = await User.updateMany(
+    { role: adminRole._id, email: { $ne: adminEmail } },
+    { role: readerRole._id }
+  );
+  if (demoted.modifiedCount > 0) {
+    console.log(`${demoted.modifiedCount} usuario(s) con rol admin pasaron a reader.`);
+  }
+
   await mongoose.disconnect();
   process.exit(0);
 };

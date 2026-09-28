@@ -1,5 +1,6 @@
 const slugify = require('slugify');
 const Post = require('../models/Post');
+const Comment = require('../models/Comment');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { sanitizeRichContent, stripToExcerpt } = require('../utils/sanitize');
@@ -158,6 +159,7 @@ const updatePost = catchAsync(async (req, res) => {
 const deletePost = catchAsync(async (req, res) => {
   const post = await getPostOr404(req.params.id);
   assertCanDelete(req, post);
+  await Comment.deleteMany({ post: post._id });
   await post.deleteOne();
   res.json({ success: true, data: null });
 });

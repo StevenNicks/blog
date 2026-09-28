@@ -84,17 +84,18 @@ function CommentRow({
   onModerate,
   onRequestDelete,
 }: CommentRowProps) {
-  const isOwner = currentUserId === comment.author._id
+  const authorName = comment.author?.name ?? "Usuario eliminado"
+  const isOwner = !!comment.author && currentUserId === comment.author._id
   const canDelete = isOwner || canModerate
   const showModerationBadge = canModerate && comment.status !== "approved"
 
   return (
     <div className={isReply ? "ml-10 border-l border-border pl-4" : ""}>
       <div className="flex gap-3">
-        <UserAvatar name={comment.author.name} avatar={comment.author.avatar} size="sm" />
+        <UserAvatar name={authorName} avatar={comment.author?.avatar} size="sm" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">{comment.author.name}</span>
+            <span className="text-sm font-medium">{authorName}</span>
             <span className="text-xs text-muted-foreground">{formatRelativeDate(comment.createdAt)}</span>
             {showModerationBadge ? <CommentStatusBadge status={comment.status} /> : null}
           </div>
@@ -148,7 +149,7 @@ function CommentRow({
             <div className="mt-3 flex flex-col gap-2">
               <Textarea
                 autoFocus
-                placeholder={`Responder a ${comment.author.name}…`}
+                placeholder={`Responder a ${authorName}…`}
                 value={replyText}
                 onChange={(e) => onReplyTextChange(e.target.value)}
                 rows={2}

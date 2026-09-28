@@ -1,5 +1,5 @@
 import { RequireAuth } from "@/components/require-auth"
-import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
+import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -8,7 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <RequireAuth>
       <SidebarProvider>
-        <DashboardSidebar />
+        <AppSidebar />
         <SidebarInset>
           <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
             <div className="flex items-center gap-2">

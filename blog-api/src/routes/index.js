@@ -7,5 +7,6 @@ router.use('/posts', require('./post.routes'));
 router.use('/posts/:postId/comments', require('./comment.routes'));
 router.use('/comments', require('./commentItem.routes'));
 router.use('/images', require('./image.routes'));
+router.use('/settings', require('./setting.routes'));
 
 module.exports = router;

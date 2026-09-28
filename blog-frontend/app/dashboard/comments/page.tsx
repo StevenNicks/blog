@@ -139,21 +139,25 @@ function CommentsModerationTable() {
         <div className="flex flex-col gap-3">
           {comments.map((comment) => (
             <div key={comment._id} className="flex items-start gap-3 rounded-xl border border-border p-4">
-              <UserAvatar name={comment.author.name} avatar={comment.author.avatar} size="sm" />
+              <UserAvatar name={comment.author?.name ?? "Usuario eliminado"} avatar={comment.author?.avatar} size="sm" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">{comment.author.name}</span>
+                  <span className="text-sm font-medium">{comment.author?.name ?? "Usuario eliminado"}</span>
                   <span className="text-xs text-muted-foreground">{formatRelativeDate(comment.createdAt)}</span>
                   <CommentStatusBadge status={comment.status} />
                 </div>
                 <p className="mt-1 text-sm text-foreground/90">{comment.content}</p>
-                <Link
-                  href={`/posts/${comment.post.slug}`}
-                  target="_blank"
-                  className="mt-1 inline-block text-xs text-muted-foreground underline underline-offset-4 hover:text-primary"
-                >
-                  en &quot;{comment.post.title}&quot;
-                </Link>
+                {comment.post ? (
+                  <Link
+                    href={`/posts/${comment.post.slug}`}
+                    target="_blank"
+                    className="mt-1 inline-block text-xs text-muted-foreground underline underline-offset-4 hover:text-primary"
+                  >
+                    en &quot;{comment.post.title}&quot;
+                  </Link>
+                ) : (
+                  <span className="mt-1 inline-block text-xs text-muted-foreground">en un post eliminado</span>
+                )}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

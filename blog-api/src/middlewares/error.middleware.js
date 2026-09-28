@@ -29,7 +29,8 @@ const errorHandler = (err, req, res, next) => {
     message = err.message;
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  // Los errores operacionales 4xx (p. ej. 401 sin sesión) son esperados; morgan ya los registra
+  if (process.env.NODE_ENV !== 'production' && (statusCode >= 500 || !err.isOperational)) {
     console.error(err);
   }
 

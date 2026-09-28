@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { ShieldAlertIcon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
-import { Spinner } from "@/components/ui/spinner"
+import { Loader } from "@/components/loader"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Button } from "@/components/ui/button"
 
@@ -27,11 +27,7 @@ export function RequireAuth({ children, anyPermission }: RequireAuthProps) {
   }, [status, router, pathname])
 
   if (status === "loading") {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner className="size-6" />
-      </div>
-    )
+    return <Loader />
   }
 
   if (status === "unauthenticated") {

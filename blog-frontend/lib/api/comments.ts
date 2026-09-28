@@ -2,7 +2,8 @@ import { apiFetch, type Fetcher, type FetcherPaged } from "@/lib/api/client"
 import type { Comment, CommentStatus } from "@/lib/types"
 
 export type CommentWithPost = Omit<Comment, "post"> & {
-  post: { _id: string; title: string; slug: string }
+  // null si el post fue eliminado
+  post: { _id: string; title: string; slug: string } | null
 }
 
 export function listCommentsPublic(postId: string) {

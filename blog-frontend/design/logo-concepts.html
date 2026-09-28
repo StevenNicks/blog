@@ -214,7 +214,44 @@
     border-radius:12px;
     padding:18px;
   }
+
+  /* ---------- Fondos de página (igual que en la app) ---------- */
+  /* Cuadrícula con puntos: líneas de 1px + punto de 2px en cada intersección,
+     color del texto al 10%, desvanecida hacia los bordes. Celda de 80px en la app. */
+  :root{--softgrid-op:.22;}
+  @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){--softgrid-op:.3;} }
+  :root[data-theme="light"]{--softgrid-op:.3;}
+  :root[data-theme="dark"]{--softgrid-op:.22;}
+  .bg-dotgrid, .bg-softgrid{position:relative; isolation:isolate; overflow:hidden; background-color:var(--bg);}
+  .bg-dotgrid::before, .bg-softgrid::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;}
+  .bg-dotgrid{--cell:80px;}
+  .bg-dotgrid::before{
+    color:color-mix(in oklch, var(--text), transparent 90%);
+    background-image:
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px),
+      radial-gradient(circle, currentColor 2px, transparent 2px);
+    background-size:var(--cell) var(--cell);
+    background-position:0 0, 0 0, calc(var(--cell) / -2 + .5px) calc(var(--cell) / -2 + .5px);
+    -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+            mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+  }
+  /* Cuadrícula suave: celda de 40px anclada arriba, opacidad .3 (claro) / .22 (oscuro). */
+  .bg-softgrid::before{
+    background-image:
+      linear-gradient(to right, var(--text) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--text) 1px, transparent 1px);
+    background-size:40px 40px; background-position:center top;
+    opacity:var(--softgrid-op);
+    -webkit-mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+            mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+  }
+  /* Fondo del propio documento: el patrón predeterminado del blog, fijo detrás de todo */
+  .page-backdrop{position:fixed; inset:0; z-index:-1; pointer-events:none;}
+  .page-backdrop.bg-dotgrid{position:fixed;}
 </style>
+
+<div class="page-backdrop bg-dotgrid" aria-hidden="true"></div>
 
 <div class="wrap">
   <p class="eyebrow">Identidad · Blog</p>

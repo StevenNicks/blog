@@ -54,8 +54,11 @@
     font-family:"Raleway",ui-sans-serif,system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  .side-gutter{padding-inline:20px;}
-  @media (min-width:900px){ .side-gutter{padding-inline:56px;} }
+  :root{--gutter:20px; --content:1040px;}
+  @media (min-width:900px){ :root{--gutter:56px;} }
+  .side-gutter{padding-inline:var(--gutter);}
+  /* Todas las bandas de contenido comparten el mismo ancho y centrado que el hero */
+  section, footer, .concept-grid{max-width:calc(var(--content) + 2 * var(--gutter)); margin-inline:auto;}
 
   code, .mono{font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;}
 
@@ -140,7 +143,7 @@
     border-bottom:1px solid var(--line);
   }
   .concept-grid{
-    max-width:1040px; margin:0 auto;
+    /* ancho y centrado: ver regla compartida con section/footer */
     display:grid; grid-template-columns:1fr 1fr; gap:48px;
     align-items:center;
     padding-block:64px;
@@ -218,7 +221,7 @@
     display:flex; flex-direction:column;
   }
   .swatch-color{height:96px;}
-  .swatch-info{padding:12px 14px; background:var(--surface);}
+  .swatch-info{flex:1; padding:12px 14px; background:var(--surface);}
   .swatch-name{font-family:"Inter"; font-weight:700; font-size:13px; margin:0 0 4px;}
   .swatch-hex{font-family:"JetBrains Mono"; font-size:11px; color:var(--text-soft); margin:0;}
   .swatch-role{font-size:11px; color:var(--text-soft); margin:4px 0 0;}
@@ -333,7 +336,71 @@
     display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;
     font-family:"JetBrains Mono"; font-size:11.5px; color:var(--text-soft);
   }
+
+  /* ---------- Fondos de página (igual que en la app) ---------- */
+  /* Cuadrícula con puntos: líneas de 1px + punto de 2px en cada intersección,
+     color del texto al 10%, desvanecida hacia los bordes. Celda de 80px en la app. */
+  :root{--softgrid-op:.22;}
+  @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){--softgrid-op:.3;} }
+  :root[data-theme="light"]{--softgrid-op:.3;}
+  :root[data-theme="dark"]{--softgrid-op:.22;}
+  .bg-dotgrid, .bg-softgrid{position:relative; isolation:isolate; overflow:hidden; background-color:var(--bg);}
+  .bg-dotgrid::before, .bg-softgrid::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;}
+  .bg-dotgrid{--cell:80px;}
+  .bg-dotgrid::before{
+    color:color-mix(in oklch, var(--text), transparent 90%);
+    background-image:
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px),
+      radial-gradient(circle, currentColor 2px, transparent 2px);
+    background-size:var(--cell) var(--cell);
+    background-position:0 0, 0 0, calc(var(--cell) / -2 + .5px) calc(var(--cell) / -2 + .5px);
+    -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+            mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 35%, transparent 85%);
+  }
+  /* Cuadrícula suave: celda de 40px anclada arriba, opacidad .3 (claro) / .22 (oscuro). */
+  .bg-softgrid::before{
+    background-image:
+      linear-gradient(to right, var(--text) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--text) 1px, transparent 1px);
+    background-size:40px 40px; background-position:center top;
+    opacity:var(--softgrid-op);
+    -webkit-mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+            mask-image:radial-gradient(ellipse at center, black 15%, transparent 78%);
+  }
+  /* Fondo del propio documento: el patrón predeterminado del blog, fijo detrás de todo */
+  .page-backdrop{position:fixed; inset:0; z-index:-1; pointer-events:none;}
+  .page-backdrop.bg-dotgrid{position:fixed;}
+
+  /* Vistas previas en ambos temas, independientes del tema del documento */
+  .theme-dark{--bg:#0b0c09; --surface:#15160f; --text:#f5f4ee; --line:rgba(255,255,255,.10); --softgrid-op:.22;}
+  .theme-light{--bg:#faf9f4; --surface:#ffffff; --text:#16170f; --line:rgba(14,15,12,.10); --softgrid-op:.3;}
+  .sub-h{font-family:"Inter"; font-weight:800; letter-spacing:-.02em; font-size:22px; margin:0 0 12px;}
+  .bgp-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:820px){ .bgp-grid{grid-template-columns:1fr;} }
+  .bgp-card{display:flex; flex-direction:column; gap:16px; padding:22px;}
+  .bgp-head{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .bgp-name{font-family:"Inter"; font-weight:700; font-size:15px; margin:0;}
+  .bgp-desc{font-size:13px; color:var(--text-soft); line-height:1.5; margin:4px 0 0;}
+  .bgp-pill{
+    font-family:"Inter"; font-weight:700; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--accent); color:var(--ink); padding:4px 9px; border-radius:999px; white-space:nowrap; flex-shrink:0;
+  }
+  .bgp-pill.ghost{background:transparent; border:1px solid var(--line); color:var(--text-soft);}
+  .bgp-stage{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .bgp-demo{height:170px; border-radius:12px; border:1px solid var(--line); display:flex; flex-direction:column;}
+  .bgp-bar{height:18px; border-bottom:1px solid var(--line); background:color-mix(in oklch, var(--bg), transparent 15%);}
+  .bgp-cards{flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:26px 14px 14px; align-content:start;}
+  .bgp-cards span{height:58px; border-radius:7px; background:var(--surface); border:1px solid var(--line);}
+  .bgp-spec{font-family:"JetBrains Mono"; font-size:10.5px; color:var(--text-soft); margin:0; line-height:1.6;}
+  .bgp-rules{list-style:none; margin:24px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
+  @media (max-width:700px){ .bgp-rules{grid-template-columns:1fr;} }
+  .bgp-rules li{display:flex; gap:10px; font-size:13.5px; color:var(--text-soft); line-height:1.5;}
+  .bgp-rules .ok{color:var(--accent-deep); font-weight:700; flex-shrink:0;}
+  .bgp-rules .x{color:#e2554f; font-weight:700; flex-shrink:0;}
 </style>
+
+<div class="page-backdrop bg-dotgrid" aria-hidden="true"></div>
 
 <nav class="topnav">
   <div class="topnav-brand">
@@ -642,7 +709,8 @@
       <p class="section-dek">
         Las dos barras del logo, convertidas en textura. Se usan con moderación: divisores de
         sección, fondos de estados vacíos, portadas por defecto cuando un post no tiene imagen.
-        Nunca detrás de texto largo.
+        Nunca detrás de texto largo. Para el fondo del sitio se usa una versión mucho más
+        silenciosa: la cuadrícula (abajo).
       </p>
     </div>
 
@@ -659,6 +727,67 @@
         <p style="padding:14px 18px; font-size:12.5px; color:var(--text-soft); margin:0;">Uso denso — divisor entre secciones</p>
       </div>
     </div>
+
+    <!-- Fondos de página -->
+    <div class="section-head" style="margin-top:72px;">
+      <h3 class="sub-h">Fondos de página</h3>
+      <p class="section-dek">
+        La versión más callada del patrón: una cuadrícula fina que se desvanece hacia los bordes,
+        fija detrás del sitio público. Hay dos variantes y el administrador elige una (o ninguna)
+        en <b>Panel → Ajustes</b>. Este documento usa la predeterminada como fondo.
+      </p>
+    </div>
+
+    <div class="bgp-grid">
+      <div class="panel bgp-card">
+        <div class="bgp-head">
+          <div>
+            <p class="bgp-name">Cuadrícula con puntos</p>
+            <p class="bgp-desc">Líneas de 1px con un punto de 2px en cada intersección, en toda la pantalla.</p>
+          </div>
+          <span class="bgp-pill">Predeterminado</span>
+        </div>
+        <div class="bgp-stage">
+          <div class="bgp-demo theme-dark bg-dotgrid" style="--cell:40px;">
+            <div class="bgp-bar"></div>
+            <div class="bgp-cards"><span></span><span></span><span></span></div>
+          </div>
+          <div class="bgp-demo theme-light bg-dotgrid" style="--cell:40px;">
+            <div class="bgp-bar"></div>
+            <div class="bgp-cards"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <p class="bgp-spec">celda 80px · texto al 10% · máscara elipse 80%, negro 35% → transparente 85%</p>
+      </div>
+
+      <div class="panel bgp-card">
+        <div class="bgp-head">
+          <div>
+            <p class="bgp-name">Cuadrícula suave</p>
+            <p class="bgp-desc">Cuadrícula fina anclada a la parte superior del viewport, sin puntos.</p>
+          </div>
+          <span class="bgp-pill ghost">Alternativa</span>
+        </div>
+        <div class="bgp-stage">
+          <div class="bgp-demo theme-dark bg-softgrid">
+            <div class="bgp-bar"></div>
+            <div class="bgp-cards"><span></span><span></span><span></span></div>
+          </div>
+          <div class="bgp-demo theme-light bg-softgrid">
+            <div class="bgp-bar"></div>
+            <div class="bgp-cards"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <p class="bgp-spec">celda 40px · opacidad .30 claro / .22 oscuro · máscara elipse, negro 15% → transparente 78%</p>
+      </div>
+    </div>
+
+    <ul class="bgp-rules">
+      <li><span class="ok">✓</span><span>Portada, listados, inicio de sesión y registro.</span></li>
+      <li><span class="ok">✓</span><span>Siempre detrás de superficies opacas (tarjetas, header con desenfoque).</span></li>
+      <li><span class="x">✕</span><span>Nunca en la lectura de un post (<code>/posts/…</code>): ahí el fondo es liso.</span></li>
+      <li><span class="x">✕</span><span>Nunca en el panel de administración.</span></li>
+    </ul>
   </section>
 
   <!-- ============ SCREENS ============ -->
