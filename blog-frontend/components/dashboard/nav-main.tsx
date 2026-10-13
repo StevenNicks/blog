@@ -45,6 +45,11 @@ const fold =
 const activeStyles =
   "duration-200 ease-linear motion-reduce:transition-none relative data-active:before:absolute data-active:before:inset-y-1.5 data-active:before:left-0 data-active:before:w-0.5 data-active:before:rounded-full data-active:before:bg-sidebar-primary data-active:[&>svg]:text-sidebar-primary"
 
+// Sub-ítem activo: la misma barra de acento, montada sobre la línea guía del submenú (border-l de
+// SidebarMenuSub, 10px a la izquierda del botón). overflow-visible deja que la barra salga del botón
+const subActiveStyles =
+  "relative overflow-visible data-active:font-medium data-active:before:absolute data-active:before:inset-y-1.5 data-active:before:-left-2.5 data-active:before:w-0.5 data-active:before:rounded-full data-active:before:bg-sidebar-primary"
+
 function ItemBadge({ count }: { count?: number }) {
   if (!count) return null
   return (
@@ -67,7 +72,7 @@ export function NavMain({ label, items }: { label: string; items: NavMainItem[] 
     <SidebarGroup>
       {/* Opacidad en 100ms (el margen sigue a 200ms con el panel): el texto desaparece antes de subir */}
       <SidebarGroupLabel className="whitespace-nowrap [transition-duration:200ms,100ms] ease-out">{label}</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="gap-1">
         {items.map((item) =>
           item.items?.length && iconMode ? (
             <SidebarMenuItem key={item.title}>
@@ -100,10 +105,10 @@ export function NavMain({ label, items }: { label: string; items: NavMainItem[] 
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub>
+                  <SidebarMenuSub className="mt-1 py-0">
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.url}>
-                        <SidebarMenuSubButton asChild isActive={subItem.isActive}>
+                        <SidebarMenuSubButton asChild isActive={subItem.isActive} className={subActiveStyles}>
                           <Link href={subItem.url}>
                             <span>{subItem.title}</span>
                           </Link>
