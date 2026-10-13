@@ -3,13 +3,13 @@
 import * as React from "react"
 import Image from "next/image"
 import { toast } from "sonner"
-import { ChevronLeftIcon, ChevronRightIcon, ImageOffIcon, Trash2Icon, UploadIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, Trash2Icon, UploadIcon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,13 +132,11 @@ function ImagesLibrary() {
           ))}
         </div>
       ) : images.length === 0 ? (
-        <Empty className="min-h-[40vh]">
-          <EmptyMedia variant="icon">
-            <ImageOffIcon />
-          </EmptyMedia>
-          <EmptyTitle>Sin imágenes</EmptyTitle>
-          <EmptyDescription>Sube tu primera imagen para usarla en tus posts.</EmptyDescription>
-        </Empty>
+        <StackedCardsEmpty
+          className="min-h-[40vh]"
+          title="Sin imágenes"
+          description="Sube tu primera imagen para usarla en tus posts."
+        />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {images.map((image) => (

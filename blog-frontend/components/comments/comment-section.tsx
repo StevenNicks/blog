@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import { Spinner } from "@/components/ui/spinner"
 import { formatRelativeDate } from "@/lib/format"
 import { ApiError } from "@/lib/api/client"
@@ -291,13 +291,11 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
 
       <div className="mt-8 flex flex-col gap-6">
         {grouped.length === 0 ? (
-          <Empty className="py-10">
-            <EmptyMedia variant="icon">
-              <MessageSquareIcon />
-            </EmptyMedia>
-            <EmptyTitle>Sé el primero en comentar</EmptyTitle>
-            <EmptyDescription>Aún no hay comentarios en este post.</EmptyDescription>
-          </Empty>
+          <StackedCardsEmpty
+            className="py-10"
+            title="Sé el primero en comentar"
+            description="Aún no hay comentarios en este post."
+          />
         ) : (
           grouped.map((comment) => (
             <div key={comment._id} className="flex flex-col gap-4">

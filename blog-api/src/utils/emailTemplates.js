@@ -52,7 +52,7 @@ const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
           <tr>
             <td style="padding:0 4px 20px 4px;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#111827;">
-              <img src="cid:${LOGO_CID}" width="32" height="32" alt="" style="display:inline-block;vertical-align:middle;border:0;border-radius:8px;">
+              <img src="cid:${LOGO_CID}" width="24" height="24" alt="" style="display:inline-block;vertical-align:middle;border:0;border-radius:6px;">
               <span style="vertical-align:middle;margin-left:8px;">${escapeHtml(BRAND)}</span>
             </td>
           </tr>

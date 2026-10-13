@@ -1,5 +1,6 @@
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -31,10 +32,13 @@ export function Pattern({
   title = "No products",
   description = "No data here yet. We will notify you when there's an update.",
   className,
+  children,
 }: {
   title?: React.ReactNode
   description?: React.ReactNode
   className?: string
+  /** Acciones opcionales (botones, enlaces) bajo el texto */
+  children?: React.ReactNode
 }) {
   return (
     <div className="flex items-center justify-center p-4">
@@ -46,6 +50,7 @@ export function Pattern({
           <EmptyTitle>{title}</EmptyTitle>
           <EmptyDescription>{description}</EmptyDescription>
         </EmptyHeader>
+        {children ? <EmptyContent>{children}</EmptyContent> : null}
       </Empty>
     </div>
   )

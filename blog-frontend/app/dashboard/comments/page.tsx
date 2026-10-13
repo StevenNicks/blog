@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, MessageSquareIcon, MoreHorizontalIcon, ShieldIcon, Trash2Icon } from "lucide-react"
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon, ShieldIcon, Trash2Icon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
@@ -12,7 +12,7 @@ import { CommentStatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,13 +128,11 @@ function CommentsModerationTable() {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <Empty className="min-h-[40vh]">
-          <EmptyMedia variant="icon">
-            <MessageSquareIcon />
-          </EmptyMedia>
-          <EmptyTitle>No hay comentarios</EmptyTitle>
-          <EmptyDescription>No se encontraron comentarios con este filtro.</EmptyDescription>
-        </Empty>
+        <StackedCardsEmpty
+          className="min-h-[40vh]"
+          title="No hay comentarios"
+          description="No se encontraron comentarios con este filtro."
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {comments.map((comment) => (

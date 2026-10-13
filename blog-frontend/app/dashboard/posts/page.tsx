@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, FileTextIcon, MoreHorizontalIcon, PenLineIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, MoreHorizontalIcon, PenLineIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle, EmptyContent } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -145,21 +145,18 @@ function PostsTable() {
                ))}
             </div>
          ) : posts.length === 0 ? (
-            <Empty className="min-h-[40vh]">
-               <EmptyMedia variant="icon">
-                  <FileTextIcon />
-               </EmptyMedia>
-               <EmptyTitle>No hay posts</EmptyTitle>
-               <EmptyDescription>Crea tu primer post para empezar a publicar contenido.</EmptyDescription>
-               <EmptyContent>
-                  <Button asChild>
-                     <Link href="/dashboard/posts/new">
-                        <PlusIcon data-icon="inline-start" />
-                        Nuevo post
-                     </Link>
-                  </Button>
-               </EmptyContent>
-            </Empty>
+            <StackedCardsEmpty
+               className="min-h-[40vh]"
+               title="No hay posts"
+               description="Crea tu primer post para empezar a publicar contenido."
+            >
+               <Button asChild>
+                  <Link href="/dashboard/posts/new">
+                     <PlusIcon data-icon="inline-start" />
+                     Nuevo post
+                  </Link>
+               </Button>
+            </StackedCardsEmpty>
          ) : (
             <div className="overflow-hidden rounded-xl border border-border">
                <Table>

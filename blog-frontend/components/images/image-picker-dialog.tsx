@@ -3,7 +3,7 @@
 import * as React from "react"
 import Image from "next/image"
 import { toast } from "sonner"
-import { ImageOffIcon, UploadIcon } from "lucide-react"
+import { UploadIcon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import { ApiError } from "@/lib/api/client"
 import * as imagesApi from "@/lib/api/images"
 import type { ImageAsset } from "@/lib/types"
@@ -99,13 +99,11 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
               ))}
             </div>
           ) : images.length === 0 ? (
-            <Empty className="h-80">
-              <EmptyMedia variant="icon">
-                <ImageOffIcon />
-              </EmptyMedia>
-              <EmptyTitle>Sin imágenes</EmptyTitle>
-              <EmptyDescription>Sube tu primera imagen para poder usarla en tus posts.</EmptyDescription>
-            </Empty>
+            <StackedCardsEmpty
+              className="h-80"
+              title="Sin imágenes"
+              description="Sube tu primera imagen para poder usarla en tus posts."
+            />
           ) : (
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
               {images.map((image) => (

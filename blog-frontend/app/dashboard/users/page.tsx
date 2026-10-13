@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { toast } from "sonner"
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon, UsersIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
@@ -13,7 +13,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -129,13 +129,11 @@ function UsersTable() {
           ))}
         </div>
       ) : users.length === 0 ? (
-        <Empty className="min-h-[40vh]">
-          <EmptyMedia variant="icon">
-            <UsersIcon />
-          </EmptyMedia>
-          <EmptyTitle>No se encontraron usuarios</EmptyTitle>
-          <EmptyDescription>Prueba con otro término de búsqueda.</EmptyDescription>
-        </Empty>
+        <StackedCardsEmpty
+          className="min-h-[40vh]"
+          title="No se encontraron usuarios"
+          description="Prueba con otro término de búsqueda."
+        />
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">
           <Table>

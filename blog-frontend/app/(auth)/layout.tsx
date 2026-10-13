@@ -13,7 +13,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       <SiteBackground pattern={pattern} />
       <header className="flex items-center justify-between p-4 sm:p-6">
         <Link href="/" className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
-          <Logo size={32} />
+          <Logo />
           Blog
         </Link>
         <ThemeToggle />
