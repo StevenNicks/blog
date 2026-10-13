@@ -22,7 +22,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar"
 
@@ -65,10 +64,7 @@ export function NavMain({ label, items }: { label: string; items: NavMainItem[] 
   if (items.length === 0) return null
 
   return (
-    <SidebarGroup className="group/nav-group">
-      {/* Con la barra contraída las etiquetas se ocultan y una línea separa los grupos (no antes del primero).
-          Va en absoluto para no ocupar espacio expandida; aparece con fundido, una vez que el texto se fue */}
-      <SidebarSeparator className="pointer-events-none absolute inset-x-2 top-0 w-auto opacity-0 transition-opacity duration-100 ease-out group-not-first/nav-group:group-data-[collapsible=icon]:delay-100 group-not-first/nav-group:group-data-[collapsible=icon]:duration-150 group-not-first/nav-group:group-data-[collapsible=icon]:opacity-100 motion-reduce:transition-none" />
+    <SidebarGroup>
       {/* Opacidad en 100ms (el margen sigue a 200ms con el panel): el texto desaparece antes de subir */}
       <SidebarGroupLabel className="whitespace-nowrap [transition-duration:200ms,100ms] ease-out">{label}</SidebarGroupLabel>
       <SidebarMenu>

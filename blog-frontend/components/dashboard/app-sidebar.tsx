@@ -106,6 +106,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     [hasPermission, pathname, pendingComments]
   )
 
+  const contentItems = toNavItems(content)
+  const adminItems = toNavItems(admin)
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -146,8 +149,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         )}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain label="Contenido" items={toNavItems(content)} />
-        <NavMain label="Administración" items={toNavItems(admin)} />
+        <NavMain label="Contenido" items={contentItems} />
+        {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator className="mx-0" />}
+        <NavMain label="Administración" items={adminItems} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
