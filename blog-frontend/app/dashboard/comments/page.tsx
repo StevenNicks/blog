@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon, ShieldIcon, Trash2Icon } from "lucide-react"
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, MoreHorizontalIcon, ShieldIcon, Trash2Icon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
@@ -71,10 +71,12 @@ function CommentsModerationTable() {
     load()
   }, [load])
 
-  async function handleModerate(id: string, next: "approved" | "spam") {
+  async function handleModerate(id: string, next: "approved" | "pending" | "spam") {
     try {
       await commentsApi.moderateComment(fetcher, id, next)
-      toast.success(next === "approved" ? "Comentario aprobado" : "Marcado como spam")
+      toast.success(
+        next === "approved" ? "Comentario aprobado" : next === "pending" ? "Marcado como pendiente" : "Marcado como spam"
+      )
       load()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el comentario")
@@ -163,11 +165,17 @@ function CommentsModerationTable() {
                     <MoreHorizontalIcon />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-40" align="end">
+                <DropdownMenuContent className="w-52" align="end">
                   {comment.status !== "approved" ? (
                     <DropdownMenuItem onClick={() => handleModerate(comment._id, "approved")}>
                       <CheckIcon data-icon="inline-start" />
                       Aprobar
+                    </DropdownMenuItem>
+                  ) : null}
+                  {comment.status !== "pending" ? (
+                    <DropdownMenuItem onClick={() => handleModerate(comment._id, "pending")}>
+                      <ClockIcon data-icon="inline-start" />
+                      Marcar como pendiente
                     </DropdownMenuItem>
                   ) : null}
                   {comment.status !== "spam" ? (
