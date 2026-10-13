@@ -1,13 +1,20 @@
+import { cookies } from "next/headers"
+
 import { RequireAuth } from "@/components/require-auth"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // SidebarProvider guarda el estado en la cookie "sidebar_state"; se lee aquí para que el
+  // servidor renderice el sidebar abierto o cerrado según la última elección (sin parpadeo)
+  const cookieStore = await cookies()
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false"
+
   return (
     <RequireAuth>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
