@@ -1,7 +1,3 @@
-"use client"
-
-import { usePathname } from "next/navigation"
-
 import { DotGridBackground } from "@/components/layout/dot-grid-background"
 import { GridBackground } from "@/components/layout/grid-background"
 import type { BackgroundPattern } from "@/lib/types"
@@ -12,10 +8,8 @@ export function BackgroundPatternView({ pattern, contained }: { pattern: Backgro
   return null
 }
 
-// Fondo del sitio público según el ajuste elegido en el panel. En la lectura
-// de un post (/posts/<slug>) no se muestra para no competir con el texto.
+// Fondo de las páginas de acceso (login, registro, recuperación de contraseña)
+// según el ajuste elegido en el panel. El sitio público no lleva fondo.
 export function SiteBackground({ pattern }: { pattern: BackgroundPattern }) {
-  const pathname = usePathname()
-  if (pathname.startsWith("/posts/")) return null
   return <BackgroundPatternView pattern={pattern} />
 }

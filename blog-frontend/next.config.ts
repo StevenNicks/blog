@@ -1,9 +1,11 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["192.168.3.70"],
   images: {
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "4000", pathname: "/uploads/**" },
+      { protocol: "http", hostname: "192.168.3.70", port: "4000", pathname: "/uploads/**" },
       { protocol: "https", hostname: "**", pathname: "/uploads/**" },
     ],
     // El backend vive en localhost durante desarrollo; Next.js bloquea por defecto

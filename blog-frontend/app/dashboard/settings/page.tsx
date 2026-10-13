@@ -68,7 +68,7 @@ function AppearanceSettings() {
         <CardHeader>
           <CardTitle>Patrón de fondo</CardTitle>
           <CardDescription>
-            Se muestra en la portada y en las páginas de acceso. En la lectura de un post no se muestra.
+            Se muestra solo en las páginas de acceso (iniciar sesión, registro y recuperación de contraseña).
           </CardDescription>
         </CardHeader>
         <CardContent>

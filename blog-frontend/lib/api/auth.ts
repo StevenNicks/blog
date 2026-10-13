@@ -25,3 +25,11 @@ export function logoutRequest() {
 export function meRequest(token: string) {
   return apiFetch<User>("/auth/me", { token })
 }
+
+export function forgotPasswordRequest(input: { email: string }) {
+  return apiFetch<{ message: string }>("/auth/forgot-password", { method: "POST", body: input })
+}
+
+export function resetPasswordRequest(input: { token: string; password: string }) {
+  return apiFetch<{ message: string }>("/auth/reset-password", { method: "POST", body: input })
+}

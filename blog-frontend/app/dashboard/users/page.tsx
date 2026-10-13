@@ -200,7 +200,7 @@ function UsersTable() {
                             <MoreHorizontalIcon />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent className="w-40" align="end">
                           <DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(user)}>
                             <Trash2Icon data-icon="inline-start" />
                             Eliminar

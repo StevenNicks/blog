@@ -1,4 +1,7 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail');
+const { resetPasswordEmail } = require('../utils/emailTemplates');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const Token = require('../models/Token');
@@ -105,4 +108,62 @@ const me = catchAsync(async (req, res) => {
   res.json({ success: true, data: req.user });
 });
 
-module.exports = { register, login, refresh, logout, me };
+const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
+
+const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  // Respuesta genérica para no revelar si el email existe
+  const response = {
+    success: true,
+    data: { message: 'Si el correo existe, te enviamos un enlace para restablecer tu contraseña.' },
+  };
+
+  const user = await User.findOne({ email, isActive: true });
+  if (!user) return res.json(response);
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  user.resetPasswordToken = hashToken(rawToken);
+  user.resetPasswordExpires = new Date(Date.now() + RESET_TTL_MS);
+  await user.save({ validateBeforeSave: false });
+
+  // El enlace apunta al mismo origen desde el que se pidió, si es uno de los permitidos
+  const clientUrls = (process.env.CLIENT_URL || '').split(',').map((o) => o.trim()).filter(Boolean);
+  const clientUrl = clientUrls.includes(req.get('origin')) ? req.get('origin') : clientUrls[0];
+  const link = `${clientUrl}/reset-password?token=${rawToken}`;
+  try {
+    await sendEmail({
+      to: user.email,
+      ...resetPasswordEmail({ name: user.name, link, expiresMinutes: RESET_TTL_MS / 60000 }),
+    });
+  } catch (err) {
+    console.error('[forgot-password] Error enviando correo:', err.message);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    throw new ApiError(500, 'No se pudo enviar el correo. Inténtalo más tarde.');
+  }
+
+  res.json(response);
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+  const { token, password } = req.body;
+
+  const user = await User.findOne({
+    resetPasswordToken: hashToken(token),
+    resetPasswordExpires: { $gt: new Date() },
+  }).select('+password +resetPasswordToken +resetPasswordExpires');
+  if (!user) throw new ApiError(400, 'El enlace es inválido o ha expirado.');
+
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  // Cierra todas las sesiones existentes
+  await Token.updateMany({ user: user._id }, { revoked: true });
+
+  res.json({ success: true, data: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' } });
+});
+
+module.exports = { register, login, refresh, logout, me, forgotPassword, resetPassword };

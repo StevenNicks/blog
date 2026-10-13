@@ -50,7 +50,7 @@ function ProfileForm() {
       </div>
 
       <Card>
-        <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+        <CardContent className="flex flex-wrap items-center gap-4">
           <UserAvatar name={user.name} avatar={avatar} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="font-medium">{user.email}</p>

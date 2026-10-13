@@ -16,7 +16,9 @@ const { notFound, errorHandler } = require('./middlewares/error.middleware');
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+// CLIENT_URL admite varios orígenes separados por coma (p. ej. localhost y la IP de la red local)
+const allowedOrigins = (process.env.CLIENT_URL || '').split(',').map((o) => o.trim()).filter(Boolean);
+app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : '*', credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));

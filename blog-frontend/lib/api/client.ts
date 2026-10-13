@@ -1,6 +1,12 @@
 import type { ApiFailure, ApiSuccess, Meta } from "@/lib/types"
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api"
+// Sin NEXT_PUBLIC_API_URL, en el navegador se usa el mismo host desde el que se abrió la app
+// (localhost o la IP de la red local) para que el backend sea alcanzable desde otros equipos.
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:4000/api`
+    : "http://localhost:4000/api")
 
 export class ApiError extends Error {
   status: number
@@ -48,7 +54,15 @@ async function rawFetch(path: string, options: RequestOptions) {
   })
 
   const text = await res.text()
-  const json = text ? (JSON.parse(text) as ApiSuccess<unknown> | ApiFailure) : null
+  let json: ApiSuccess<unknown> | ApiFailure | null = null
+  if (text) {
+    try {
+      json = JSON.parse(text) as ApiSuccess<unknown> | ApiFailure
+    } catch {
+      // Respuesta no JSON (p. ej. un 429 del rate limiter global): se usa el texto como mensaje
+      throw new ApiError(res.status, res.ok ? "Respuesta inválida del servidor" : text.slice(0, 200))
+    }
+  }
 
   if (!res.ok || !json || json.success === false) {
     const message = json && "message" in json && json.message ? json.message : `Error ${res.status}`

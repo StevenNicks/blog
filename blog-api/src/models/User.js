@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema(
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date, default: null },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );

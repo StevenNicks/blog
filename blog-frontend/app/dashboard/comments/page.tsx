@@ -165,7 +165,7 @@ function CommentsModerationTable() {
                     <MoreHorizontalIcon />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent className="w-40" align="end">
                   {comment.status !== "approved" ? (
                     <DropdownMenuItem onClick={() => handleModerate(comment._id, "approved")}>
                       <CheckIcon data-icon="inline-start" />
