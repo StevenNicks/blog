@@ -5,9 +5,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   FileTextIcon,
+  GlobeIcon,
   ImageIcon,
   LayoutDashboardIcon,
   MessageSquareIcon,
+  PlusIcon,
   SettingsIcon,
   ShieldIcon,
   UsersIcon,
@@ -17,6 +19,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider"
 import { Logo } from "@/components/logo"
 import { NavMain, type NavMainItem } from "@/components/dashboard/nav-main"
+import { listAllComments } from "@/lib/api/comments"
 import { NavUser } from "@/components/dashboard/nav-user"
 import {
   Sidebar,
@@ -27,6 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 interface NavConfigItem {
@@ -64,7 +68,23 @@ const admin: NavConfigItem[] = [
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { hasPermission } = useAuth()
+  const { hasPermission, fetcherPaged } = useAuth()
+  const canModerate = hasPermission("comments:moderate")
+  const [pendingComments, setPendingComments] = React.useState(0)
+
+  // Comentarios pendientes de moderar: se refresca al navegar (p. ej. tras moderar uno)
+  React.useEffect(() => {
+    if (!canModerate) return
+    let cancelled = false
+    listAllComments(fetcherPaged, { status: "pending", limit: 1 })
+      .then((res) => {
+        if (!cancelled) setPendingComments(res.meta?.total ?? 0)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [canModerate, fetcherPaged, pathname])
 
   const toNavItems = React.useCallback(
     (config: NavConfigItem[]): NavMainItem[] =>
@@ -80,9 +100,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             icon: item.icon,
             isActive: item.exact ? pathname === item.url : pathname.startsWith(item.url),
             items: subItems,
+            badge: item.url === "/dashboard/comments" ? pendingComments : undefined,
           }
         }),
-    [hasPermission, pathname]
+    [hasPermission, pathname, pendingComments]
   )
 
   return (
@@ -103,12 +124,43 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        {hasPermission("posts:create") && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Nuevo post"
+                // h-6 iguala la altura del logo. Mismo ritmo que el ancho del sidebar (200ms lineal) y se anima
+                // también el margen, para que el botón se encoja sin saltos; contraído mide 24px con ml-1 (como el logo)
+                className="h-6 justify-center bg-primary py-0 text-primary-foreground transition-[width,height,padding,margin] duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground motion-reduce:transition-none group-data-[collapsible=icon]:ml-1 group-data-[collapsible=icon]:size-6! group-data-[collapsible=icon]:p-1!">
+                <Link href="/dashboard/posts/new">
+                  <PlusIcon />
+                  {/* El texto se pliega (ancho + opacidad) en vez de cortarse; -ml-2 anula el gap para que el icono quede centrado */}
+                  <span className="max-w-20 whitespace-nowrap transition-[max-width,margin,opacity] [transition-duration:200ms,200ms,100ms] [transition-delay:0ms,0ms,100ms] ease-linear group-data-[collapsible=icon]:[transition-delay:0ms] group-data-[collapsible=icon]:-ml-2 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
+                    Nuevo post
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain label="Contenido" items={toNavItems(content)} />
         <NavMain label="Administración" items={toNavItems(admin)} />
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Ver blog">
+              <Link href="/">
+                <GlobeIcon />
+                <span>Ver blog</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <SidebarSeparator className="mx-0" />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

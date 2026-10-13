@@ -29,7 +29,9 @@ export function NavUser() {
       <UserAvatar name={user.name} avatar={user.avatar} size="sm" />
       <div className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-medium">{user.name}</span>
-        <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          <span className="capitalize">{user.role.name}</span> · {user.email}
+        </span>
       </div>
     </>
   )
