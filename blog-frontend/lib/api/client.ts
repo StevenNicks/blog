@@ -8,6 +8,22 @@ export const API_URL =
     ? `${window.location.protocol}//${window.location.hostname}:4000/api`
     : "http://localhost:4000/api")
 
+// El backend guarda las URLs de /uploads con el host usado al subir el archivo (p. ej. localhost).
+// En el navegador se reapunta al host del API actual para que carguen desde otros dispositivos.
+export function assetUrl(url: string | null | undefined) {
+  if (!url || typeof window === "undefined") return url ?? undefined
+  try {
+    const asset = new URL(url)
+    if (!asset.pathname.startsWith("/uploads/")) return url
+    const api = new URL(API_URL)
+    asset.protocol = api.protocol
+    asset.host = api.host
+    return asset.toString()
+  } catch {
+    return url
+  }
+}
+
 export class ApiError extends Error {
   status: number
   details?: unknown

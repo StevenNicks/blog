@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true, minlength: 8, select: false },
     avatar: { type: String, default: null },
+    coverImage: { type: String, default: null },
     bio: { type: String, maxlength: 500, default: '' },
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
     isActive: { type: Boolean, default: true },

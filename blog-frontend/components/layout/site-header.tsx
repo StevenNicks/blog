@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { UserAvatar } from "@/components/user-avatar"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +48,10 @@ export function SiteHeader() {
         {/* Todos los controles miden 24px (1.5rem) de alto y son redondos.
             Los tooltips solo se muestran en escritorio (max-sm:hidden): en móvil no hay hover */}
         <div className="flex items-center gap-2">
-          {status === "loading" ? null : status === "unauthenticated" ? (
+          {status === "loading" ? (
+            // Reserva el espacio de los controles de sesión para evitar saltos de layout
+            <Skeleton aria-hidden className="h-6 w-6 rounded-full sm:w-28" />
+          ) : status === "unauthenticated" ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="xs" className="rounded-full max-sm:size-6 max-sm:p-0!" asChild>

@@ -1,5 +1,5 @@
-import { Loader } from "@/components/loader"
+import { PostDetailSkeleton } from "@/components/loading/post-detail-skeleton"
 
 export default function Loading() {
-  return <Loader />
+  return <PostDetailSkeleton />
 }

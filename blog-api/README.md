@@ -26,6 +26,28 @@ El seed crea 4 roles del sistema (`admin`, `editor`, `author`, `reader`) y un
 usuario administrador (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env`,
 por defecto `admin@blog.com` / `Admin12345!`).
 
+### Datos de ejemplo (demo)
+
+Para validar el blog de punta a punta hay un seed opcional con contenido de prueba
+(requiere haber ejecutado antes `npm run seed` para que existan los roles):
+
+```bash
+npm run seed:demo             # crea (o recrea) los datos de ejemplo
+npm run seed:demo -- --clean  # elimina solo lo creado por el seed demo
+```
+
+Crea 9 usuarios (2 autores, 1 editor y 6 lectores), 6 posts (5 publicados y 1
+borrador) y 31 comentarios en español, con hilos de respuestas y algunos
+comentarios `pending` y `spam` para probar la moderación.
+
+- Los usuarios demo son `<nombre>@demo.blog` (`lucia`, `martin`, `sofia`,
+  `carlos`, `valentina`, `diego`, `camila`, `andres`, `paula`) y todos usan la
+  contraseña `Demo12345!`.
+- Todo lo demo se identifica por el dominio `@demo.blog`, así que `--clean` no
+  toca tus datos reales.
+- El script escribe en la base de datos de `MONGO_URI`; no lo ejecutes contra
+  producción.
+
 ## Modelo de roles y permisos
 
 Los roles no están fijados en código: son documentos en Mongo (`Role`) con un
@@ -142,6 +164,7 @@ src/
   routes/
   validators/         express-validator
   seed/seed.js        roles base + usuario admin
+  seed/demo.js        usuarios, posts y comentarios de ejemplo
   app.js
   server.js
 uploads/               archivos subidos (servidos como estáticos)

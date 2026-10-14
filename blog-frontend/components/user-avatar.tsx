@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { initials } from "@/lib/format"
+import { assetUrl } from "@/lib/api/client"
 
 interface UserAvatarProps {
   name: string
@@ -11,7 +12,7 @@ interface UserAvatarProps {
 export function UserAvatar({ name, avatar, size = "default", className }: UserAvatarProps) {
   return (
     <Avatar size={size} className={className}>
-      {avatar ? <AvatarImage src={avatar} alt={name} /> : null}
+      {avatar ? <AvatarImage src={assetUrl(avatar)} alt={name} /> : null}
       <AvatarFallback>{initials(name) || "?"}</AvatarFallback>
     </Avatar>
   )

@@ -17,7 +17,7 @@ export function getUser(fetcher: Fetcher, id: string) {
   return fetcher<User>(`/users/${id}`, { cache: "no-store" })
 }
 
-export function updateUser(fetcher: Fetcher, id: string, input: { name?: string; bio?: string; avatar?: string | null }) {
+export function updateUser(fetcher: Fetcher, id: string, input: { name?: string; bio?: string; avatar?: string | null; coverImage?: string | null }) {
   return fetcher<User>(`/users/${id}`, { method: "PATCH", body: input })
 }
 

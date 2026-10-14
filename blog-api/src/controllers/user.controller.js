@@ -52,7 +52,7 @@ const updateUser = catchAsync(async (req, res) => {
   const isAdmin = req.user.role.name === 'admin';
   if (!isSelf && !isAdmin) throw new ApiError(403, 'No puedes editar este usuario.');
 
-  const allowedFields = ['name', 'bio', 'avatar'];
+  const allowedFields = ['name', 'bio', 'avatar', 'coverImage'];
   const updates = {};
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) updates[field] = req.body[field];

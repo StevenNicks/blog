@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { formatRelativeDate } from "@/lib/format"
 import { ApiError } from "@/lib/api/client"
@@ -279,7 +280,9 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
               </Button>
             </div>
           </Field>
-        ) : status === "loading" ? null : (
+        ) : status === "loading" ? (
+          <Skeleton aria-hidden className="h-24 w-full rounded-lg" />
+        ) : (
           <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
             <Link href="/login" className="font-medium text-primary underline underline-offset-4">
               Inicia sesión
