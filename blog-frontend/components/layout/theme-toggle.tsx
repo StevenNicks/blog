@@ -6,7 +6,7 @@ import { MoonIcon, SunIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
-export function ThemeToggle() {
+export function ThemeToggle({ size = "icon" }: { size?: "icon" | "icon-xs" }) {
   const { resolvedTheme, setTheme } = useTheme()
 
   return (
@@ -14,7 +14,7 @@ export function ThemeToggle() {
       <TooltipTrigger asChild>
         <Button
           variant="outline"
-          size="icon"
+          size={size}
           className="rounded-full"
           aria-label="Cambiar tema"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
@@ -23,7 +23,8 @@ export function ThemeToggle() {
           <MoonIcon className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Cambiar tema (d)</TooltipContent>
+      {/* Solo en escritorio: en móvil no hay hover */}
+      <TooltipContent className="max-sm:hidden">Cambiar tema (d)</TooltipContent>
     </Tooltip>
   )
 }

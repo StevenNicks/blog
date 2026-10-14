@@ -44,37 +44,54 @@ export function SiteHeader() {
           ) : null}
         </nav>
 
+        {/* Todos los controles miden 24px (1.5rem) de alto y son redondos.
+            Los tooltips solo se muestran en escritorio (max-sm:hidden): en móvil no hay hover */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <ThemeToggle size="icon-xs" />
 
           {status === "loading" ? null : status === "unauthenticated" ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full" asChild>
-                  <Link href="/login" aria-label="Iniciar sesión">
-                    <UserRoundIcon />
+                <Button variant="outline" size="xs" className="rounded-full max-sm:size-6 max-sm:p-0!" asChild>
+                  <Link href="/login">
+                    <UserRoundIcon data-icon="inline-start" />
+                    <span className="max-sm:sr-only">Iniciar sesión</span>
                   </Link>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Iniciar sesión</TooltipContent>
+              <TooltipContent className="max-sm:hidden">Inicia sesión para comentar y escribir</TooltipContent>
             </Tooltip>
           ) : (
-            <div className="flex items-center gap-2">
+            <>
               {canWrite ? (
-                <Button variant="outline" size="sm" asChild className="hidden rounded-full sm:inline-flex">
-                  <Link href="/dashboard/posts/new">
-                    <PenLineIcon data-icon="inline-start" />
-                    Nuevo post
-                  </Link>
-                </Button>
+                // Acción principal: el único botón relleno. En móvil queda solo el icono
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="xs" className="rounded-full max-sm:size-6 max-sm:p-0!" asChild>
+                      <Link href="/dashboard/posts/new">
+                        <PenLineIcon data-icon="inline-start" />
+                        <span className="max-sm:sr-only">Nuevo post</span>
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-sm:hidden">Escribir un nuevo post</TooltipContent>
+                </Tooltip>
               ) : null}
 
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                    <UserAvatar name={user?.name ?? ""} avatar={user?.avatar} />
-                  </button>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        aria-label="Menú de usuario"
+                        className="rounded-full outline-none transition-shadow hover:ring-2 hover:ring-border focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:ring-2 aria-expanded:ring-border"
+                      >
+                        <UserAvatar name={user?.name ?? ""} avatar={user?.avatar} size="sm" />
+                      </button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-sm:hidden">Tu cuenta</TooltipContent>
+                </Tooltip>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="flex flex-col">
                     <span className="font-medium">{user?.name}</span>
@@ -102,7 +119,7 @@ export function SiteHeader() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </>
           )}
         </div>
       </div>
