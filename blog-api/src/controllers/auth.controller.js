@@ -77,21 +77,28 @@ const refresh = catchAsync(async (req, res) => {
   const token = req.cookies?.[REFRESH_COOKIE];
   if (!token) throw new ApiError(401, 'No hay token de refresco.');
 
+  // Una cookie inválida, caducada o revocada se borra: el proxy del frontend decide
+  // según su sola presencia, y una cookie huérfana impediría volver a /login.
+  const reject = (message) => {
+    res.clearCookie(REFRESH_COOKIE);
+    return new ApiError(401, message);
+  };
+
   let payload;
   try {
     payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
   } catch (err) {
-    throw new ApiError(401, 'Token de refresco inválido o expirado.');
+    throw reject('Token de refresco inválido o expirado.');
   }
 
   const hashed = hashToken(token);
   const stored = await Token.findOne({ user: payload.sub, token: hashed, revoked: false });
   if (!stored || stored.expiresAt < new Date()) {
-    throw new ApiError(401, 'Token de refresco inválido o expirado.');
+    throw reject('Token de refresco inválido o expirado.');
   }
 
   const user = await User.findById(payload.sub).populate('role');
-  if (!user || !user.isActive) throw new ApiError(401, 'Usuario no encontrado o inactivo.');
+  if (!user || !user.isActive) throw reject('Usuario no encontrado o inactivo.');
 
   // Rotación: se revoca el token usado y se emite uno nuevo
   stored.revoked = true;

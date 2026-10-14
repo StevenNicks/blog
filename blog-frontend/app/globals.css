@@ -154,12 +154,3 @@
     --tw-prose-td-borders: var(--border);
   }
 }
-/* Cuadrícula de líneas finas (patrón "grid" del fondo). La intensidad se ajusta
-   con la opacidad del elemento que la usa. */
-@utility bg-grid {
-  background-image:
-    linear-gradient(to right, var(--foreground) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--foreground) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: center top;
-}

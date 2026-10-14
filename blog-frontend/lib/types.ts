@@ -15,6 +15,7 @@ export interface User {
   name: string
   email: string
   avatar: string | null
+  coverImage: string | null
   bio: string
   role: Role
   isActive: boolean
@@ -110,7 +111,7 @@ export const PERMISSIONS = [
 
 export type Permission = (typeof PERMISSIONS)[number]
 
-export const BACKGROUND_PATTERNS = ["dot-grid", "grid", "none"] as const
+export const BACKGROUND_PATTERNS = ["dot-grid", "grid", "dots", "spotlight", "none"] as const
 
 export type BackgroundPattern = (typeof BACKGROUND_PATTERNS)[number]
 

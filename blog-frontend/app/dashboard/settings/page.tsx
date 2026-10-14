@@ -7,6 +7,7 @@ import { CheckIcon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
+import { notifyBackgroundChanged } from "@/components/layout/background-sync"
 import { BackgroundPatternView } from "@/components/layout/site-background"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,7 +25,17 @@ const PATTERN_OPTIONS: { value: BackgroundPattern; title: string; description: s
   {
     value: "grid",
     title: "Cuadrícula suave",
-    description: "Cuadrícula fina en la parte superior que se desvanece hacia los bordes.",
+    description: "Cuadrícula fina que se desvanece hacia el centro de la pantalla.",
+  },
+  {
+    value: "dots",
+    title: "Puntos",
+    description: "Trama de puntos discretos que se desvanece hacia el centro.",
+  },
+  {
+    value: "spotlight",
+    title: "Foco de luz",
+    description: "Un haz de luz animado sobre una cuadrícula tenue.",
   },
   { value: "none", title: "Sin patrón", description: "Fondo liso." },
 ]
@@ -49,6 +60,7 @@ function AppearanceSettings() {
       const updated = await settingsApi.updateSettings(fetcher, { backgroundPattern: value })
       setPattern(updated.backgroundPattern)
       router.refresh()
+      notifyBackgroundChanged()
       toast.success("Patrón de fondo actualizado")
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo guardar el ajuste")
@@ -68,7 +80,7 @@ function AppearanceSettings() {
         <CardHeader>
           <CardTitle>Patrón de fondo</CardTitle>
           <CardDescription>
-            Se muestra solo en las páginas de acceso (iniciar sesión, registro y recuperación de contraseña).
+            Se muestra en las páginas de acceso (iniciar sesión, registro y recuperación de contraseña), en Mi perfil y en estos ajustes.
           </CardDescription>
         </CardHeader>
         <CardContent>

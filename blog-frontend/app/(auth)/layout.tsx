@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { ThemeToggle } from "@/components/layout/theme-toggle"
+import { BackgroundSync } from "@/components/layout/background-sync"
 import { SiteBackground } from "@/components/layout/site-background"
 import { Logo } from "@/components/logo"
 import { getBackgroundPattern } from "@/lib/api/settings"
@@ -10,6 +11,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex min-h-svh flex-col">
+      <BackgroundSync />
       <SiteBackground pattern={pattern} />
       <header className="flex items-center justify-between p-4 sm:p-6">
         <Link href="/" className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">

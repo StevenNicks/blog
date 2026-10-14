@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 // Ajustes globales del sitio. Es un documento único (key: 'site').
-const BACKGROUND_PATTERNS = ['dot-grid', 'grid', 'none'];
+const BACKGROUND_PATTERNS = ['dot-grid', 'grid', 'dots', 'spotlight', 'none'];
 
 const settingSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, default: 'site' },
     // Patrón de fondo de las páginas de acceso (auth): 'dot-grid' (cuadrícula con puntos),
-    // 'grid' (cuadrícula suave en la parte superior) o 'none'
+    // 'grid' (cuadrícula suave), 'dots' (puntos), 'spotlight' (foco de luz) o 'none'
     backgroundPattern: { type: String, enum: BACKGROUND_PATTERNS, default: 'dot-grid' },
   },
   { timestamps: true }
