@@ -3,12 +3,11 @@
 import * as React from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { BadgeCheckIcon, CameraIcon, GlobeIcon, MailIcon, Trash2Icon } from "lucide-react"
+import { BadgeCheckIcon, CameraIcon, GlobeIcon, MailIcon, ShieldIcon, Trash2Icon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
 import { UserAvatar } from "@/components/user-avatar"
-import { RoleBadge } from "@/components/status-badge"
 import { ImagePickerDialog } from "@/components/images/image-picker-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -147,17 +146,26 @@ function ProfileForm() {
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <h2 className="font-heading text-xl font-semibold tracking-tight">{user.name}</h2>
-            <Badge variant="outline" className="gap-1.5">
-              <span
-                className={
-                  user.isActive
-                    ? "size-1.5 rounded-full bg-emerald-500"
-                    : "size-1.5 rounded-full bg-muted-foreground"
-                }
-              />
-              {user.isActive ? "Activo" : "Inactivo"}
+            <Badge
+              variant="outline"
+              className="gap-0 divide-x divide-border px-0"
+              aria-label={`${user.isActive ? "Activo" : "Inactivo"}, rol ${user.role.name}`}
+            >
+              <span className="flex items-center gap-1.5 pr-2 pl-2.5">
+                <span
+                  className={
+                    user.isActive
+                      ? "size-1.5 rounded-full bg-emerald-500"
+                      : "size-1.5 rounded-full bg-muted-foreground"
+                  }
+                />
+                {user.isActive ? "Activo" : "Inactivo"}
+              </span>
+              <span className="flex items-center gap-1 pr-2.5 pl-2 font-medium capitalize">
+                <ShieldIcon className="size-3 text-muted-foreground" />
+                {user.role.name}
+              </span>
             </Badge>
-            <RoleBadge role={user.role.name} />
           </div>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
             {user.email}
@@ -166,12 +174,16 @@ function ProfileForm() {
             ) : null}
           </p>
 
-          <div className="mt-5 grid grid-cols-2 gap-4">
-            <Stat label="Miembro desde" value={formatDate(user.createdAt, { month: "short" })} />
-            <Stat
-              label="Último acceso"
-              value={user.lastLoginAt ? formatDate(user.lastLoginAt, { month: "short" }) : "—"}
-            />
+          <div className="mt-5 grid grid-cols-2 divide-x divide-border">
+            <div className="pr-4">
+              <Stat label="Miembro desde" value={formatDate(user.createdAt, { month: "short" })} />
+            </div>
+            <div className="pl-4">
+              <Stat
+                label="Último acceso"
+                value={user.lastLoginAt ? formatDate(user.lastLoginAt, { month: "short" }) : "—"}
+              />
+            </div>
           </div>
         </div>
 
