@@ -63,7 +63,8 @@ const getPostBySlug = catchAsync(async (req, res) => {
 
   const isOwnerOrEditor =
     req.user &&
-    (req.user._id.equals(post.author._id) ||
+    // post.author es null si la cuenta del autor fue eliminada
+    ((post.author && req.user._id.equals(post.author._id)) ||
       req.user.role.name === 'admin' ||
       req.user.role.permissions.includes(PERM.POSTS_EDIT_ANY));
 

@@ -185,7 +185,7 @@ function PostsTable() {
                   <TableCell>
                     <PostStatusBadge status={post.status} />
                   </TableCell>
-                  {canSeeAll ? <TableCell>{post.author.name}</TableCell> : null}
+                  {canSeeAll ? <TableCell>{post.author?.name ?? "Usuario eliminado"}</TableCell> : null}
                   <TableCell className="text-muted-foreground">{post.category}</TableCell>
                   <TableCell className="text-right text-muted-foreground">{post.views}</TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(post.createdAt)}</TableCell>
