@@ -50,8 +50,9 @@ function CommentsModerationTable() {
   const [pages, setPages] = React.useState(1)
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
 
-  const load = React.useCallback(async () => {
-    setLoading(true)
+  // silent: refresca sin mostrar el skeleton (tras moderar o eliminar, la lista ya está en pantalla)
+  const load = React.useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const { data, meta } = await commentsApi.listAllComments(fetcherPaged, {
         page,
@@ -77,7 +78,7 @@ function CommentsModerationTable() {
       toast.success(
         next === "approved" ? "Comentario aprobado" : next === "pending" ? "Marcado como pendiente" : "Marcado como spam"
       )
-      load()
+      load(true)
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el comentario")
     }
@@ -89,7 +90,7 @@ function CommentsModerationTable() {
       await commentsApi.deleteComment(fetcher, deleteTarget)
       toast.success("Comentario eliminado")
       setDeleteTarget(null)
-      load()
+      load(true)
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el comentario")
     }
