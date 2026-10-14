@@ -33,10 +33,22 @@ export function updateComment(fetcher: Fetcher, id: string, content: string) {
   return fetcher<Comment>(`/comments/${id}`, { method: "PATCH", body: { content } })
 }
 
-export function deleteComment(fetcher: Fetcher, id: string) {
-  return fetcher<null>(`/comments/${id}`, { method: "DELETE" })
+// Se emite en window cuando cambia el estado de un comentario o se elimina (p. ej. para refrescar
+// el contador de pendientes del sidebar)
+export const COMMENTS_CHANGED_EVENT = "comments:changed"
+
+function notifyCommentsChanged() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(COMMENTS_CHANGED_EVENT))
 }
 
-export function moderateComment(fetcher: Fetcher, id: string, status: CommentStatus) {
-  return fetcher<Comment>(`/comments/${id}/moderate`, { method: "PATCH", body: { status } })
+export async function deleteComment(fetcher: Fetcher, id: string) {
+  const result = await fetcher<null>(`/comments/${id}`, { method: "DELETE" })
+  notifyCommentsChanged()
+  return result
+}
+
+export async function moderateComment(fetcher: Fetcher, id: string, status: CommentStatus) {
+  const result = await fetcher<Comment>(`/comments/${id}/moderate`, { method: "PATCH", body: { status } })
+  notifyCommentsChanged()
+  return result
 }

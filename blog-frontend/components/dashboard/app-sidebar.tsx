@@ -19,7 +19,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider"
 import { Logo } from "@/components/logo"
 import { NavMain, type NavMainItem } from "@/components/dashboard/nav-main"
-import { listAllComments } from "@/lib/api/comments"
+import { COMMENTS_CHANGED_EVENT, listAllComments } from "@/lib/api/comments"
 import { NavUser } from "@/components/dashboard/nav-user"
 import {
   Sidebar,
@@ -72,17 +72,22 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const canModerate = hasPermission("comments:moderate")
   const [pendingComments, setPendingComments] = React.useState(0)
 
-  // Comentarios pendientes de moderar: se refresca al navegar (p. ej. tras moderar uno)
+  // Comentarios pendientes de moderar: se refresca al navegar y cada vez que se modera o elimina uno
   React.useEffect(() => {
     if (!canModerate) return
     let cancelled = false
-    listAllComments(fetcherPaged, { status: "pending", limit: 1 })
-      .then((res) => {
-        if (!cancelled) setPendingComments(res.meta?.total ?? 0)
-      })
-      .catch(() => {})
+    const refresh = () => {
+      listAllComments(fetcherPaged, { status: "pending", limit: 1 })
+        .then((res) => {
+          if (!cancelled) setPendingComments(res.meta?.total ?? 0)
+        })
+        .catch(() => {})
+    }
+    refresh()
+    window.addEventListener(COMMENTS_CHANGED_EVENT, refresh)
     return () => {
       cancelled = true
+      window.removeEventListener(COMMENTS_CHANGED_EVENT, refresh)
     }
   }, [canModerate, fetcherPaged, pathname])
 
