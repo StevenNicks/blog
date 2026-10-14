@@ -24,7 +24,10 @@ const resetPasswordValidator = [
     .withMessage('La contraseña debe tener al menos 8 caracteres'),
 ];
 
+const verifyEmailValidator = [body('token').notEmpty().withMessage('El token es obligatorio')];
+
 module.exports = {
+  verifyEmailValidator,
   registerValidator,
   loginValidator,
   forgotPasswordValidator,

@@ -11,14 +11,22 @@ const hpp = require('hpp');
 const rateLimit = require('express-rate-limit');
 
 const routes = require('./routes');
+const { clientUrls, isOriginAllowed } = require('./utils/allowedOrigins');
 const { notFound, errorHandler } = require('./middlewares/error.middleware');
 
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
-// CLIENT_URL admite varios orígenes separados por coma (p. ej. localhost y la IP de la red local)
-const allowedOrigins = (process.env.CLIENT_URL || '').split(',').map((o) => o.trim()).filter(Boolean);
-app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : '*', credentials: true }));
+// CLIENT_URL admite varios orígenes separados por coma y comodines por segmento (p. ej. http://192.168.1.*:3000)
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || !clientUrls().length || isOriginAllowed(origin)) return cb(null, true);
+      return cb(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));

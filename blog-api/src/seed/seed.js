@@ -73,6 +73,7 @@ const run = async () => {
       email: adminEmail,
       password: adminPassword,
       role: adminRole._id,
+      emailVerifiedAt: new Date(),
     });
     console.log(`Usuario admin creado -> email: ${adminEmail} / password: ${adminPassword}`);
   } else {

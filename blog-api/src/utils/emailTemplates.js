@@ -15,21 +15,22 @@ const logoAttachment = {
 const escapeHtml = (value) =>
   String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
+const formatExpires = (minutes) =>
+  minutes >= 60 ? `${Math.round(minutes / 60)} hora${Math.round(minutes / 60) === 1 ? '' : 's'}` : `${minutes} minutos`;
+
+// Plantilla común para correos con un botón de acción y un enlace de un solo uso.
+const actionEmail = ({ subject, preheader, heading, name, intro, textIntro, buttonLabel, link, expires, ignoreNote }) => {
   const safeName = escapeHtml(name);
   const safeLink = escapeHtml(link);
-  const expires = expiresMinutes >= 60 ? `${Math.round(expiresMinutes / 60)} hora` : `${expiresMinutes} minutos`;
-
-  const subject = `Restablece tu contraseña de ${BRAND}`;
 
   const text = [
     `Hola ${name},`,
     '',
-    `Recibimos una solicitud para restablecer la contraseña de tu cuenta en ${BRAND}.`,
+    textIntro,
     `Usa este enlace (válido por ${expires}):`,
     link,
     '',
-    'Si no lo solicitaste, puedes ignorar este correo: tu contraseña no cambiará.',
+    ignoreNote,
     '',
     `— El equipo de ${BRAND}`,
   ].join('\n');
@@ -44,7 +45,7 @@ const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
 </head>
 <body style="margin:0;padding:0;background-color:#f4f5f7;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-    Usa este enlace para elegir una nueva contraseña. Vence en ${expires}.
+    ${escapeHtml(preheader)} Vence en ${expires}.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7;padding:32px 12px;">
     <tr>
@@ -58,16 +59,16 @@ const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
           </tr>
           <tr>
             <td style="background-color:#ffffff;border-radius:16px;border:1px solid #e5e7eb;padding:36px 32px;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#374151;">
-              <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.3;color:#111827;">Restablece tu contraseña</h1>
+              <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.3;color:#111827;">${escapeHtml(heading)}</h1>
               <p style="margin:0 0 8px 0;font-size:15px;line-height:1.6;">Hola ${safeName},</p>
               <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;">
-                Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón para elegir una nueva.
+                ${escapeHtml(intro)}
               </p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
                 <tr>
                   <td align="center" style="border-radius:10px;background-color:${ACCENT};">
                     <a href="${safeLink}" target="_blank" style="display:inline-block;padding:13px 28px;font-size:15px;font-weight:600;color:${ACCENT_TEXT};text-decoration:none;border-radius:10px;">
-                      Restablecer contraseña
+                      ${escapeHtml(buttonLabel)}
                     </a>
                   </td>
                 </tr>
@@ -83,7 +84,7 @@ const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
                 <a href="${safeLink}" target="_blank" style="color:#4d7c0f;">${safeLink}</a>
               </p>
               <p style="margin:0;font-size:12px;line-height:1.6;color:#6b7280;">
-                ¿No fuiste tú? Ignora este correo: tu contraseña seguirá siendo la misma.
+                ${escapeHtml(ignoreNote)}
               </p>
             </td>
           </tr>
@@ -102,4 +103,32 @@ const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) => {
   return { subject, text, html, attachments: [logoAttachment] };
 };
 
-module.exports = { resetPasswordEmail };
+const resetPasswordEmail = ({ name, link, expiresMinutes = 60 }) =>
+  actionEmail({
+    subject: `Restablece tu contraseña de ${BRAND}`,
+    preheader: 'Usa este enlace para elegir una nueva contraseña.',
+    heading: 'Restablece tu contraseña',
+    name,
+    intro: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón para elegir una nueva.',
+    textIntro: `Recibimos una solicitud para restablecer la contraseña de tu cuenta en ${BRAND}.`,
+    buttonLabel: 'Restablecer contraseña',
+    link,
+    expires: formatExpires(expiresMinutes),
+    ignoreNote: '¿No fuiste tú? Ignora este correo: tu contraseña seguirá siendo la misma.',
+  });
+
+const verifyEmailEmail = ({ name, link, expiresMinutes = 1440 }) =>
+  actionEmail({
+    subject: `Verifica tu correo en ${BRAND}`,
+    preheader: 'Confirma tu dirección de correo para verificar tu cuenta.',
+    heading: 'Verifica tu correo',
+    name,
+    intro: `Gracias por unirte a ${BRAND}. Confirma que esta dirección de correo es tuya haciendo clic en el botón.`,
+    textIntro: `Confirma que esta dirección de correo es tuya para verificar tu cuenta en ${BRAND}.`,
+    buttonLabel: 'Verificar correo',
+    link,
+    expires: formatExpires(expiresMinutes),
+    ignoreNote: '¿No creaste una cuenta? Puedes ignorar este correo.',
+  });
+
+module.exports = { resetPasswordEmail, verifyEmailEmail };

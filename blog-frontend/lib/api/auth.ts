@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client"
+import { apiFetch, type Fetcher } from "@/lib/api/client"
 import type { User } from "@/lib/types"
 
 export interface AuthPayload {
@@ -32,4 +32,12 @@ export function forgotPasswordRequest(input: { email: string }) {
 
 export function resetPasswordRequest(input: { token: string; password: string }) {
   return apiFetch<{ message: string }>("/auth/reset-password", { method: "POST", body: input })
+}
+
+export function verifyEmailRequest(input: { token: string }) {
+  return apiFetch<{ message: string }>("/auth/verify-email", { method: "POST", body: input })
+}
+
+export function sendVerificationRequest(fetcher: Fetcher) {
+  return fetcher<{ message: string; delivered: boolean }>("/auth/send-verification", { method: "POST" })
 }
