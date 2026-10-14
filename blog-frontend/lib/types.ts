@@ -18,6 +18,7 @@ export interface User {
   bio: string
   role: Role
   isActive: boolean
+  emailVerifiedAt: string | null
   lastLoginAt: string | null
   createdAt: string
   updatedAt: string
