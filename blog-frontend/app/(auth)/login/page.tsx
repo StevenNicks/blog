@@ -70,7 +70,7 @@ function LoginForm() {
   const emailValid = EMAIL_PATTERN.test(email)
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-xl/30">
       <CardHeader>
         <LogInIcon className="mb-2 size-5" aria-hidden />
         <CardTitle className="font-heading text-2xl">Iniciar sesión</CardTitle>

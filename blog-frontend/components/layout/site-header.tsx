@@ -47,8 +47,6 @@ export function SiteHeader() {
         {/* Todos los controles miden 24px (1.5rem) de alto y son redondos.
             Los tooltips solo se muestran en escritorio (max-sm:hidden): en móvil no hay hover */}
         <div className="flex items-center gap-2">
-          <ThemeToggle size="icon-xs" />
-
           {status === "loading" ? null : status === "unauthenticated" ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -121,6 +119,7 @@ export function SiteHeader() {
               </DropdownMenu>
             </>
           )}
+          <ThemeToggle size="icon-xs" />
         </div>
       </div>
     </header>

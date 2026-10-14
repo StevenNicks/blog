@@ -53,7 +53,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-xl/30">
       <CardHeader>
         <LockKeyholeIcon className="mb-2 size-5" aria-hidden />
         <CardTitle className="font-heading text-2xl">Nueva contraseña</CardTitle>

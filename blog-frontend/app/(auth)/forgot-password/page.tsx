@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-xl/30">
       <CardHeader>
         {sent ? (
           <MailCheckIcon className="mb-2 size-5" aria-hidden />

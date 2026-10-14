@@ -47,7 +47,7 @@ function VerifyEmailCard() {
   const Icon = status === "success" ? CircleCheckIcon : status === "error" ? CircleAlertIcon : MailCheckIcon
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-xl/30">
       <CardHeader>
         <Icon className="mb-2 size-5" aria-hidden />
         <CardTitle className="font-heading text-2xl">

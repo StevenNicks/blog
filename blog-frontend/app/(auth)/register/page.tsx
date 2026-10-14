@@ -51,7 +51,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-xl/30">
       <CardHeader>
         <UserPlusIcon className="mb-2 size-5" aria-hidden />
         <CardTitle className="font-heading text-2xl">Crear cuenta</CardTitle>
