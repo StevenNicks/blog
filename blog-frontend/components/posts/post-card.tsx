@@ -52,8 +52,8 @@ export function PostCard({ post, priority = false }: { post: Post; priority?: bo
 
       <CardFooter className="flex items-center justify-between border-t py-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <UserAvatar name={post.author.name} avatar={post.author.avatar} size="sm" />
-          <span className="truncate font-medium text-foreground">{post.author.name}</span>
+          <UserAvatar name={post.author?.name ?? "Usuario eliminado"} avatar={post.author?.avatar} size="sm" />
+          <span className="truncate font-medium text-foreground">{post.author?.name ?? "Usuario eliminado"}</span>
         </div>
         <div className="flex flex-col items-end text-xs">
           <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>

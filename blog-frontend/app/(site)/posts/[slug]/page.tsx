@@ -57,9 +57,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <div className="mt-6 flex flex-wrap items-center gap-4 border-y border-border py-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <UserAvatar name={post.author.name} avatar={post.author.avatar} />
+          <UserAvatar name={post.author?.name ?? "Usuario eliminado"} avatar={post.author?.avatar} />
           <div className="flex flex-col leading-tight">
-            <span className="font-medium text-foreground">{post.author.name}</span>
+            <span className="font-medium text-foreground">{post.author?.name ?? "Usuario eliminado"}</span>
             <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
           </div>
         </div>
@@ -92,7 +92,7 @@ export default async function PostPage({ params }: PostPageProps) {
       {/* eslint-disable-next-line react/no-danger -- contenido saneado en el backend con sanitize-html antes de guardarse */}
       <div className="prose-content mt-8" dangerouslySetInnerHTML={{ __html: post.content }} />
 
-      {post.author.bio ? (
+      {post.author?.bio ? (
         <div className="mt-10 flex items-start gap-4 rounded-xl border border-border bg-muted/40 p-5">
           <UserAvatar name={post.author.name} avatar={post.author.avatar} size="lg" />
           <div>

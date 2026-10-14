@@ -36,7 +36,7 @@ function formatShortDate(value: string) {
 }
 
 function uploaderName(image: ImageAsset) {
-  return typeof image.uploadedBy === "string" ? null : image.uploadedBy.name
+  return typeof image.uploadedBy === "string" ? null : (image.uploadedBy?.name ?? null)
 }
 
 function ImagesLibrary() {

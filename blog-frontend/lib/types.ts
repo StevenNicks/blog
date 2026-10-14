@@ -32,7 +32,7 @@ export interface ImageAsset {
   mimetype: string
   size: number
   alt: string
-  uploadedBy: string | Pick<User, "_id" | "name" | "avatar">
+  uploadedBy: string | Pick<User, "_id" | "name" | "avatar"> | null
   createdAt: string
   updatedAt: string
 }
@@ -47,7 +47,8 @@ export interface Post {
   excerpt: string
   coverImage: ImageAsset | null
   images: ImageAsset[]
-  author: Pick<User, "_id" | "name" | "avatar" | "bio">
+  // null si la cuenta del autor fue eliminada
+  author: Pick<User, "_id" | "name" | "avatar" | "bio"> | null
   category: string
   tags: string[]
   status: PostStatus
