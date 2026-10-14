@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
-const { resetPasswordEmail } = require('../utils/emailTemplates');
+const { resetPasswordEmail, verifyEmailEmail } = require('../utils/emailTemplates');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const Token = require('../models/Token');
@@ -9,6 +9,7 @@ const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { generateAccessToken, generateRefreshToken } = require('../utils/generateTokens');
 const hashToken = require('../utils/hashToken');
+const { clientUrls, isOriginAllowed } = require('../utils/allowedOrigins');
 
 const REFRESH_COOKIE = 'refreshToken';
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
@@ -46,6 +47,11 @@ const register = catchAsync(async (req, res) => {
 
   const user = await User.create({ name, email, password, role: defaultRole._id });
   await user.populate('role');
+
+  // Si el envío falla, el usuario puede reenviarlo desde su perfil
+  sendVerificationEmail(user, req.get('origin')).catch((err) =>
+    console.error('[register] Error enviando correo de verificación:', err.message)
+  );
 
   const accessToken = await issueTokens(res, user);
   res.status(201).json({ success: true, data: { user, accessToken } });
@@ -108,6 +114,60 @@ const me = catchAsync(async (req, res) => {
   res.json({ success: true, data: req.user });
 });
 
+const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
+
+// Genera un token de verificación, lo guarda hasheado y envía el correo.
+const sendVerificationEmail = async (user, origin) => {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  user.emailVerificationToken = hashToken(rawToken);
+  user.emailVerificationExpires = new Date(Date.now() + VERIFY_TTL_MS);
+  await user.save({ validateBeforeSave: false });
+
+  const clientUrl = isOriginAllowed(origin) ? origin : clientUrls()[0];
+  const link = `${clientUrl}/verify-email?token=${rawToken}`;
+  try {
+    return await sendEmail({
+      to: user.email,
+      ...verifyEmailEmail({ name: user.name, link, expiresMinutes: VERIFY_TTL_MS / 60000 }),
+    });
+  } catch (err) {
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    throw err;
+  }
+};
+
+const sendVerification = catchAsync(async (req, res) => {
+  if (req.user.emailVerifiedAt) throw new ApiError(400, 'Tu correo ya está verificado.');
+  let delivered;
+  try {
+    delivered = await sendVerificationEmail(req.user, req.get('origin'));
+  } catch (err) {
+    console.error('[send-verification] Error enviando correo:', err.message);
+    throw new ApiError(500, 'No se pudo enviar el correo. Inténtalo más tarde.');
+  }
+  const message = delivered
+    ? 'Te enviamos un correo para verificar tu cuenta.'
+    : 'No se pudo entregar el correo (SMTP). El enlace de verificación se imprimió en la consola del servidor.';
+  res.json({ success: true, data: { message, delivered } });
+});
+
+const verifyEmail = catchAsync(async (req, res) => {
+  const user = await User.findOne({
+    emailVerificationToken: hashToken(req.body.token),
+    emailVerificationExpires: { $gt: new Date() },
+  }).select('+emailVerificationToken +emailVerificationExpires');
+  if (!user) throw new ApiError(400, 'El enlace es inválido o ha expirado.');
+
+  user.emailVerifiedAt = new Date();
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  res.json({ success: true, data: { message: 'Correo verificado correctamente.' } });
+});
+
 const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
 
 const forgotPassword = catchAsync(async (req, res) => {
@@ -127,8 +187,7 @@ const forgotPassword = catchAsync(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   // El enlace apunta al mismo origen desde el que se pidió, si es uno de los permitidos
-  const clientUrls = (process.env.CLIENT_URL || '').split(',').map((o) => o.trim()).filter(Boolean);
-  const clientUrl = clientUrls.includes(req.get('origin')) ? req.get('origin') : clientUrls[0];
+  const clientUrl = isOriginAllowed(req.get('origin')) ? req.get('origin') : clientUrls()[0];
   const link = `${clientUrl}/reset-password?token=${rawToken}`;
   try {
     await sendEmail({
@@ -166,4 +225,14 @@ const resetPassword = catchAsync(async (req, res) => {
   res.json({ success: true, data: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' } });
 });
 
-module.exports = { register, login, refresh, logout, me, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  refresh,
+  logout,
+  me,
+  forgotPassword,
+  resetPassword,
+  sendVerification,
+  verifyEmail,
+};

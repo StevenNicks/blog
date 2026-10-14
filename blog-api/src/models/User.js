@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema(
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date, default: null },
+    emailVerifiedAt: { type: Date, default: null },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
   },
@@ -37,6 +40,10 @@ userSchema.methods.comparePassword = function comparePassword(candidate) {
 userSchema.methods.toJSON = function toJSON() {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.emailVerificationToken;
+  delete obj.emailVerificationExpires;
+  delete obj.resetPasswordToken;
+  delete obj.resetPasswordExpires;
   return obj;
 };
 
