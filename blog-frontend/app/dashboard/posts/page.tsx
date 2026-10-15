@@ -193,7 +193,7 @@ function PostsTable() {
                                        <MoreHorizontalIcon />
                                     </Button>
                                  </DropdownMenuTrigger>
-                                 <DropdownMenuContent className="w-40" align="end">
+                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem asChild>
                                        <Link href={`/dashboard/posts/${post.slug}/edit`}>
                                           <PenLineIcon data-icon="inline-start" />

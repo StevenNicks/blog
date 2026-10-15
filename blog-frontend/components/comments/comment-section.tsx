@@ -122,7 +122,7 @@ function CommentRow({
                     <MoreVerticalIcon />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-40" align="start">
+                <DropdownMenuContent align="start">
                   {canModerate && comment.status !== "approved" ? (
                     <DropdownMenuItem onClick={() => onModerate(comment._id, "approved")}>
                       <CheckIcon data-icon="inline-start" />

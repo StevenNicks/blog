@@ -4,14 +4,18 @@ const Comment = require('../models/Comment');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 
-// El rol admin es exclusivo del propietario del blog (creado por el seed):
-// no se puede asignar a nadie más, y la cuenta admin no se puede degradar,
-// desactivar ni eliminar desde la API.
-const assertNotAdminAccount = async (id) => {
+const ownerEmail = () => (process.env.SEED_ADMIN_EMAIL || 'admin@blog.com').toLowerCase();
+
+// La cuenta propietaria (SEED_ADMIN_EMAIL) no se puede degradar, desactivar ni eliminar.
+// A los demás administradores solo los puede gestionar otro administrador.
+const assertCanManage = async (req, id) => {
   const user = await User.findById(id).populate('role');
   if (!user) throw new ApiError(404, 'Usuario no encontrado.');
-  if (user.role?.name === 'admin') {
-    throw new ApiError(403, 'La cuenta de administrador no se puede modificar desde aquí.');
+  if (user.email.toLowerCase() === ownerEmail()) {
+    throw new ApiError(403, 'La cuenta del propietario no se puede modificar desde aquí.');
+  }
+  if (user.role?.name === 'admin' && req.user.role.name !== 'admin') {
+    throw new ApiError(403, 'Solo un administrador puede modificar a otro administrador.');
   }
   return user;
 };
@@ -67,7 +71,7 @@ const updateUser = catchAsync(async (req, res) => {
 });
 
 const setUserActive = catchAsync(async (req, res) => {
-  await assertNotAdminAccount(req.params.id);
+  await assertCanManage(req, req.params.id);
   const user = await User.findByIdAndUpdate(
     req.params.id,
     { isActive: req.body.isActive },
@@ -80,8 +84,11 @@ const setUserActive = catchAsync(async (req, res) => {
 const assignRole = catchAsync(async (req, res) => {
   const role = await Role.findById(req.body.role);
   if (!role) throw new ApiError(404, 'Rol no encontrado.');
-  if (role.name === 'admin') throw new ApiError(403, 'El rol de administrador no se puede asignar.');
-  await assertNotAdminAccount(req.params.id);
+  if (req.user._id.equals(req.params.id)) throw new ApiError(403, 'No puedes cambiar tu propio rol.');
+  if (role.name === 'admin' && req.user.role.name !== 'admin') {
+    throw new ApiError(403, 'Solo un administrador puede asignar el rol de administrador.');
+  }
+  await assertCanManage(req, req.params.id);
 
   const user = await User.findByIdAndUpdate(
     req.params.id,
@@ -93,7 +100,7 @@ const assignRole = catchAsync(async (req, res) => {
 });
 
 const deleteUser = catchAsync(async (req, res) => {
-  const user = await assertNotAdminAccount(req.params.id);
+  const user = await assertCanManage(req, req.params.id);
   await Comment.deleteMany({ author: user._id });
   await user.deleteOne();
   res.json({ success: true, data: null });

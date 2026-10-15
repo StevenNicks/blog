@@ -13,6 +13,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
   DropdownMenu,
@@ -46,6 +47,7 @@ function UsersTable() {
   const [pages, setPages] = React.useState(1)
   const [total, setTotal] = React.useState(0)
   const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null)
+  const [pendingIds, setPendingIds] = React.useState<Set<string>>(new Set())
 
   const load = React.useCallback(async () => {
     setLoading(true)
@@ -69,23 +71,38 @@ function UsersTable() {
     load()
   }, [load])
 
+  function setPending(id: string, on: boolean) {
+    setPendingIds((prev) => {
+      const next = new Set(prev)
+      if (on) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
   async function handleRoleChange(user: User, roleId: string) {
+    setPending(user._id, true)
     try {
       const updated = await usersApi.assignRole(fetcher, user._id, roleId)
       setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)))
       toast.success("Rol actualizado")
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el rol")
+    } finally {
+      setPending(user._id, false)
     }
   }
 
   async function handleActiveChange(user: User, isActive: boolean) {
+    setPending(user._id, true)
     try {
       const updated = await usersApi.setUserActive(fetcher, user._id, isActive)
       setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)))
       toast.success(isActive ? "Usuario activado" : "Usuario desactivado")
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el usuario")
+    } finally {
+      setPending(user._id, false)
     }
   }
 
@@ -148,8 +165,11 @@ function UsersTable() {
             </TableHeader>
             <TableBody>
               {users.map((user) => {
-                // La cuenta admin (propietario) no se puede editar, y el rol admin no se ofrece a nadie más
-                const isLocked = user._id === currentUser?._id || user.role.name === "admin"
+                // No puedes editarte a ti mismo; solo un admin gestiona a otros admins (la API protege al propietario)
+                const isPending = pendingIds.has(user._id)
+                const isLocked =
+                  user._id === currentUser?._id ||
+                  (user.role.name === "admin" && currentUser?.role.name !== "admin")
                 return (
                   <TableRow key={user._id}>
                     <TableCell>
@@ -162,10 +182,11 @@ function UsersTable() {
                       </div>
                     </TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-2" aria-busy={isPending}>
                       <Select
                         value={user.role._id}
                         onValueChange={(roleId) => handleRoleChange(user, roleId)}
-                        disabled={isLocked}
+                        disabled={isLocked || isPending}
                       >
                         <SelectTrigger className="w-36">
                           <SelectValue />
@@ -173,7 +194,7 @@ function UsersTable() {
                         <SelectContent>
                           <SelectGroup>
                             {roles
-                              .filter((role) => role.name !== "admin" || user.role.name === "admin")
+                              .filter((role) => role.name !== "admin" || currentUser?.role.name === "admin")
                               .map((role) => (
                                 <SelectItem key={role._id} value={role._id}>
                                   {role.name}
@@ -182,11 +203,16 @@ function UsersTable() {
                           </SelectGroup>
                         </SelectContent>
                       </Select>
+                      {/* Ancho fijo reservado para que la fila no salte al aparecer el spinner */}
+                      <span className="flex size-4 items-center justify-center">
+                        {isPending ? <Spinner /> : null}
+                      </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Switch
                         checked={user.isActive}
-                        disabled={isLocked}
+                        disabled={isLocked || isPending}
                         onCheckedChange={(checked) => handleActiveChange(user, checked)}
                       />
                     </TableCell>
@@ -198,7 +224,7 @@ function UsersTable() {
                             <MoreHorizontalIcon />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40" align="end">
+                        <DropdownMenuContent align="end">
                           <DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(user)}>
                             <Trash2Icon data-icon="inline-start" />
                             Eliminar
