@@ -1,2 +1,4 @@
 # Capturas y logs de las pruebas con Playwright MCP
 .playwright-mcp/
+
+node_modules/
