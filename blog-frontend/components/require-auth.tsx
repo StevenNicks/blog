@@ -31,7 +31,8 @@ export function RequireAuth({ children, anyPermission }: RequireAuthProps) {
   }
 
   if (status === "unauthenticated") {
-    return null
+    // Mientras se redirige a /login no dejamos la pantalla en blanco
+    return <Loader />
   }
 
   if (anyPermission && !hasAnyPermission(anyPermission)) {

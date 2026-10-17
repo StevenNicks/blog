@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useDelayedLoading } from "@/hooks/use-delayed-loading"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -129,8 +131,16 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
   })
 
   useForceUpdateOnTransaction(editor)
+  const showSkeleton = useDelayedLoading(!editor)
 
-  if (!editor) return null
+  // Reserva el alto de barra + área de edición para que no haya salto al montarse el editor
+  if (!editor) {
+    return (
+      <div aria-busy="true" className={cn("h-[365px] w-full", className)}>
+        {showSkeleton ? <Skeleton className="size-full rounded-lg" /> : null}
+      </div>
+    )
+  }
 
   const headingValue = editor.isActive("heading", { level: 2 })
     ? "h2"

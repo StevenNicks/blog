@@ -35,6 +35,19 @@ export function PostDetailSkeleton() {
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-3/4" />
         </div>
+
+        {/* Sección de comentarios: reserva el espacio del título, el cuadro de texto y un comentario */}
+        <div className="mt-12 border-t border-border pt-10">
+          <Skeleton className="h-7 w-44" />
+          <Skeleton className="mt-6 h-24 w-full rounded-lg" />
+          <div className="mt-8 flex gap-3">
+            <Skeleton className="size-8 shrink-0 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        </div>
       </div>
     </article>
   )

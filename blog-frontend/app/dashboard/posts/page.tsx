@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
    DropdownMenu,
@@ -47,16 +50,27 @@ function PostsTable() {
    const canSeeAll = hasPermission("posts:edit:any")
 
    const [posts, setPosts] = React.useState<Post[]>([])
+   // loading: primera carga (skeleton). refreshing: recargas con datos ya visibles (spinner discreto)
    const [loading, setLoading] = React.useState(true)
+   const [refreshing, setRefreshing] = React.useState(false)
+   const [loadError, setLoadError] = React.useState(false)
    const [search, setSearch] = React.useState("")
    const [status, setStatus] = React.useState<PostStatus | "all">("all")
    const [page, setPage] = React.useState(1)
    const [pages, setPages] = React.useState(1)
-   const [total, setTotal] = React.useState(0)
+   const [total, setTotal] = React.useState<number | null>(null)
    const [deleteTarget, setDeleteTarget] = React.useState<Post | null>(null)
+   const [deleting, setDeleting] = React.useState(false)
+   const loadedRef = React.useRef(false)
+   const requestRef = React.useRef(0)
 
    const load = React.useCallback(async () => {
-      setLoading(true)
+      const requestId = ++requestRef.current
+      if (loadedRef.current) setRefreshing(true)
+      else {
+         setLoading(true)
+         setLoadError(false)
+      }
       try {
          const { data, meta } = await postsApi.listPosts(fetcherPaged, {
             page,
@@ -65,13 +79,20 @@ function PostsTable() {
             status: status === "all" ? undefined : status,
             author: canSeeAll ? undefined : user?._id,
          })
+         if (requestId !== requestRef.current) return
          setPosts(data)
          setPages(meta?.pages ?? 1)
          setTotal(meta?.total ?? data.length)
+         loadedRef.current = true
       } catch (err) {
+         if (requestId !== requestRef.current) return
          toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los posts")
+         if (!loadedRef.current) setLoadError(true)
       } finally {
-         setLoading(false)
+         if (requestId === requestRef.current) {
+            setLoading(false)
+            setRefreshing(false)
+         }
       }
    }, [fetcherPaged, page, search, status, canSeeAll, user?._id])
 
@@ -80,7 +101,8 @@ function PostsTable() {
    }, [load])
 
    async function handleDelete() {
-      if (!deleteTarget) return
+      if (!deleteTarget || deleting) return
+      setDeleting(true)
       try {
          await postsApi.deletePost(fetcher, deleteTarget._id)
          toast.success("Post eliminado")
@@ -88,6 +110,8 @@ function PostsTable() {
          load()
       } catch (err) {
          toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el post")
+      } finally {
+         setDeleting(false)
       }
    }
 
@@ -96,7 +120,15 @@ function PostsTable() {
          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
                <h1 className="font-heading text-2xl font-semibold tracking-tight">Posts</h1>
-               <p className="text-sm text-muted-foreground">{total} post{total === 1 ? "" : "s"} en total</p>
+               <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {total === null ? (
+                     <span aria-hidden className="inline-block h-5 w-32" />
+                  ) : (
+                     <span>{total} post{total === 1 ? "" : "s"} en total</span>
+                  )}
+                  {/* Ancho reservado para que el texto no salte al aparecer el spinner */}
+                  <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
+               </p>
             </div>
             <Button asChild>
                <Link href="/dashboard/posts/new">
@@ -138,12 +170,19 @@ function PostsTable() {
             </Select>
          </div>
 
-         {loading ? (
-            <div className="flex flex-col gap-2">
-               {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-               ))}
-            </div>
+         <LoadingGate
+            loading={loading}
+            onRetry={load}
+            skeleton={
+               <div className="flex flex-col gap-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                     <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+               </div>
+            }
+         >
+         {loadError ? (
+            <LoadError title="No se pudieron cargar los posts" onRetry={load} />
          ) : posts.length === 0 ? (
             <StackedCardsEmpty
                className="min-h-[40vh]"
@@ -221,6 +260,7 @@ function PostsTable() {
                </Table>
             </div>
          )}
+         </LoadingGate>
 
          {pages > 1 ? (
             <div className="flex items-center justify-between">
@@ -258,7 +298,17 @@ function PostsTable() {
                </AlertDialogHeader>
                <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+                  <AlertDialogAction
+                     onClick={(e) => {
+                        // Mantiene el diálogo abierto mientras se elimina
+                        e.preventDefault()
+                        handleDelete()
+                     }}
+                     disabled={deleting}
+                  >
+                     {deleting ? <Spinner data-icon="inline-start" /> : null}
+                     Eliminar
+                  </AlertDialogAction>
                </AlertDialogFooter>
             </AlertDialogContent>
          </AlertDialog>

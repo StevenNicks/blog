@@ -145,7 +145,14 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} disabled={deleting}>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      // Mantiene el diálogo abierto mientras se elimina
+                      e.preventDefault()
+                      handleDelete()
+                    }}
+                    disabled={deleting}
+                  >
                     {deleting ? <Spinner data-icon="inline-start" /> : null}
                     Eliminar
                   </AlertDialogAction>

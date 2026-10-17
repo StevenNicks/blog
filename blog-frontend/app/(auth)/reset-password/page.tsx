@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeftIcon, LockKeyholeIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { AuthCardSkeleton } from "@/components/loading/auth-card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -17,7 +18,7 @@ import { resetPasswordRequest } from "@/lib/api/auth"
 
 export default function ResetPasswordPage() {
   return (
-    <React.Suspense fallback={<Spinner className="size-6" />}>
+    <React.Suspense fallback={<AuthCardSkeleton />}>
       <ResetPasswordForm />
     </React.Suspense>
   )

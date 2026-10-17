@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { CircleAlertIcon, CircleCheckIcon, MailCheckIcon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
+import { AuthCardSkeleton } from "@/components/loading/auth-card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
@@ -14,7 +15,7 @@ import { verifyEmailRequest } from "@/lib/api/auth"
 
 export default function VerifyEmailPage() {
   return (
-    <React.Suspense fallback={<Spinner className="size-6" />}>
+    <React.Suspense fallback={<AuthCardSkeleton />}>
       <VerifyEmailCard />
     </React.Suspense>
   )

@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
@@ -31,20 +33,26 @@ interface ImagePickerDialogProps {
 export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps) {
   const { fetcher, fetcherPaged } = useAuth()
   const [open, setOpen] = React.useState(false)
-  const [images, setImages] = React.useState<ImageAsset[]>([])
-  const [loading, setLoading] = React.useState(false)
+  // null = aún no se ha cargado nunca (skeleton); después, al reabrir se refresca sin ocultar la lista
+  const [images, setImages] = React.useState<ImageAsset[] | null>(null)
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [loadError, setLoadError] = React.useState(false)
   const [uploading, setUploading] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const loadedRef = React.useRef(false)
 
   const loadImages = React.useCallback(async () => {
-    setLoading(true)
+    if (loadedRef.current) setRefreshing(true)
+    else setLoadError(false)
     try {
       const { data } = await imagesApi.listImages(fetcherPaged, { limit: 60 })
       setImages(data)
+      loadedRef.current = true
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar las imágenes")
+      if (!loadedRef.current) setLoadError(true)
     } finally {
-      setLoading(false)
+      setRefreshing(false)
     }
   }, [fetcherPaged])
 
@@ -57,7 +65,7 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
     setUploading(true)
     try {
       const uploaded = await imagesApi.uploadImages(fetcher, Array.from(fileList))
-      setImages((prev) => [...uploaded, ...prev])
+      setImages((prev) => [...uploaded, ...(prev ?? [])])
       toast.success(uploaded.length > 1 ? "Imágenes subidas" : "Imagen subida")
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo subir la imagen")
@@ -89,15 +97,28 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
             {uploading ? <Spinner data-icon="inline-start" /> : <UploadIcon data-icon="inline-start" />}
             Subir imagen
           </Button>
+          {/* Ancho reservado para que la fila no salte al aparecer el spinner */}
+          <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
         </div>
 
         <ScrollArea className="h-96">
-          {loading ? (
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-lg" />
-              ))}
-            </div>
+          <LoadingGate
+            loading={images === null && !loadError}
+            onRetry={loadImages}
+            skeleton={
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-square rounded-lg" />
+                ))}
+              </div>
+            }
+          >
+          {images === null ? (
+            <LoadError
+              className="h-80 min-h-0"
+              title="No se pudieron cargar las imágenes"
+              onRetry={loadImages}
+            />
           ) : images.length === 0 ? (
             <StackedCardsEmpty
               className="h-80"
@@ -127,6 +148,7 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
               ))}
             </div>
           )}
+          </LoadingGate>
         </ScrollArea>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { LayoutDashboardIcon, LogOutIcon, PenLineIcon, UserIcon, UserRoundIcon } from "lucide-react"
@@ -10,6 +11,7 @@ import { UserAvatar } from "@/components/user-avatar"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 export function SiteHeader() {
   const { user, status, logout, hasAnyPermission } = useAuth()
   const router = useRouter()
+  const [loggingOut, setLoggingOut] = React.useState(false)
 
   const canWrite = hasAnyPermission(["posts:create"])
 
@@ -111,13 +114,22 @@ export function SiteHeader() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={async () => {
-                      await logout()
-                      router.push("/")
+                    disabled={loggingOut}
+                    onSelect={async (e) => {
+                      // Mantiene el menú abierto para mostrar el spinner mientras se cierra la sesión
+                      e.preventDefault()
+                      if (loggingOut) return
+                      setLoggingOut(true)
+                      try {
+                        await logout()
+                        router.push("/")
+                      } finally {
+                        setLoggingOut(false)
+                      }
                     }}
                   >
-                    <LogOutIcon data-icon="inline-start" />
-                    Cerrar sesión
+                    {loggingOut ? <Spinner data-icon="inline-start" /> : <LogOutIcon data-icon="inline-start" />}
+                    {loggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

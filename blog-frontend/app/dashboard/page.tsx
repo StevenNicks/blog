@@ -22,7 +22,7 @@ interface StatDef {
 }
 
 export default function DashboardHomePage() {
-  const { user, hasPermission, fetcherPaged, fetcher } = useAuth()
+  const { user, hasPermission, fetcherPaged } = useAuth()
   const [counts, setCounts] = React.useState<Record<string, number | null>>({})
 
   const stats: StatDef[] = React.useMemo(
@@ -69,15 +69,30 @@ export default function DashboardHomePage() {
 
   const visibleStats = stats.filter((s) => !s.permission || hasPermission(s.permission))
 
+  function loadStat(stat: StatDef) {
+    stat
+      .load()
+      .then((value) => setCounts((prev) => ({ ...prev, [stat.key]: value })))
+      .catch(() => setCounts((prev) => ({ ...prev, [stat.key]: null })))
+  }
+
   React.useEffect(() => {
-    visibleStats.forEach((stat) => {
-      stat
-        .load()
-        .then((value) => setCounts((prev) => ({ ...prev, [stat.key]: value })))
-        .catch(() => setCounts((prev) => ({ ...prev, [stat.key]: null })))
-    })
+    visibleStats.forEach(loadStat)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const hasFailed = visibleStats.some((s) => counts[s.key] === null)
+
+  function retryFailed() {
+    const failed = visibleStats.filter((s) => counts[s.key] === null)
+    // Vuelve a "cargando" (undefined) solo las tarjetas que fallaron
+    setCounts((prev) => {
+      const next = { ...prev }
+      failed.forEach((s) => delete next[s.key])
+      return next
+    })
+    failed.forEach(loadStat)
+  }
 
   const canWrite = hasPermission("posts:create")
 
@@ -106,9 +121,9 @@ export default function DashboardHomePage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
                 <stat.icon className="size-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
+              <CardContent aria-busy={counts[stat.key] === undefined}>
                 {counts[stat.key] === undefined ? (
-                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-9 w-16" />
                 ) : (
                   <p className="font-heading text-3xl font-bold">{counts[stat.key] ?? "—"}</p>
                 )}
@@ -117,6 +132,15 @@ export default function DashboardHomePage() {
           </Link>
         ))}
       </div>
+
+      {hasFailed ? (
+        <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <span>No se pudieron cargar algunas estadísticas.</span>
+          <Button variant="outline" size="sm" onClick={retryFailed}>
+            Reintentar
+          </Button>
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>

@@ -8,6 +8,8 @@ import { ChevronLeftIcon, ChevronRightIcon, Trash2Icon, UploadIcon } from "lucid
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
 import { Button } from "@/components/ui/button"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
@@ -42,28 +44,45 @@ function uploaderName(image: ImageAsset) {
 function ImagesLibrary() {
   const { fetcher, fetcherPaged, hasPermission } = useAuth()
   const [images, setImages] = React.useState<ImageAsset[]>([])
+  // loading: primera carga (skeleton). refreshing: recargas con datos ya visibles (spinner discreto)
   const [loading, setLoading] = React.useState(true)
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [loadError, setLoadError] = React.useState(false)
   const [uploading, setUploading] = React.useState(false)
   const [page, setPage] = React.useState(1)
   const [pages, setPages] = React.useState(1)
-  const [total, setTotal] = React.useState(0)
+  const [total, setTotal] = React.useState<number | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<ImageAsset | null>(null)
   const [deleting, setDeleting] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const loadedRef = React.useRef(false)
+  const requestRef = React.useRef(0)
 
   const canSeeAll = hasPermission("images:delete:any")
 
   const load = React.useCallback(async () => {
-    setLoading(true)
+    const requestId = ++requestRef.current
+    if (loadedRef.current) setRefreshing(true)
+    else {
+      setLoading(true)
+      setLoadError(false)
+    }
     try {
       const { data, meta } = await imagesApi.listImages(fetcherPaged, { page, limit: 24 })
+      if (requestId !== requestRef.current) return
       setImages(data)
       setPages(meta?.pages ?? 1)
       setTotal(meta?.total ?? data.length)
+      loadedRef.current = true
     } catch (err) {
+      if (requestId !== requestRef.current) return
       toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar las imágenes")
+      if (!loadedRef.current) setLoadError(true)
     } finally {
-      setLoading(false)
+      if (requestId === requestRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [fetcherPaged, page])
 
@@ -88,7 +107,7 @@ function ImagesLibrary() {
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return
+    if (!deleteTarget || deleting) return
     setDeleting(true)
     try {
       await imagesApi.deleteImage(fetcher, deleteTarget._id)
@@ -107,8 +126,16 @@ function ImagesLibrary() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Imágenes</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} imagen{total === 1 ? "" : "es"} {canSeeAll ? "en la biblioteca" : "subidas por ti"}
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            {total === null ? (
+              <span aria-hidden className="inline-block h-5 w-32" />
+            ) : (
+              <span>
+                {total} imagen{total === 1 ? "" : "es"} {canSeeAll ? "en la biblioteca" : "subidas por ti"}
+              </span>
+            )}
+            {/* Ancho reservado para que el texto no salte al aparecer el spinner */}
+            <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
           </p>
         </div>
         <input
@@ -125,12 +152,19 @@ function ImagesLibrary() {
         </Button>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square rounded-xl" />
-          ))}
-        </div>
+      <LoadingGate
+        loading={loading}
+        onRetry={load}
+        skeleton={
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-xl" />
+            ))}
+          </div>
+        }
+      >
+      {loadError ? (
+        <LoadError title="No se pudieron cargar las imágenes" onRetry={load} />
       ) : images.length === 0 ? (
         <StackedCardsEmpty
           className="min-h-[40vh]"
@@ -163,6 +197,7 @@ function ImagesLibrary() {
           ))}
         </div>
       )}
+      </LoadingGate>
 
       {pages > 1 ? (
         <div className="flex items-center justify-between">
@@ -192,7 +227,14 @@ function ImagesLibrary() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deleting}>
+            <AlertDialogAction
+              onClick={(e) => {
+                // Mantiene el diálogo abierto mientras se elimina
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={deleting}
+            >
               {deleting ? <Spinner data-icon="inline-start" /> : null}
               Eliminar
             </AlertDialogAction>

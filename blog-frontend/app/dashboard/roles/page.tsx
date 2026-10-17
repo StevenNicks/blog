@@ -10,7 +10,10 @@ import { RoleFormDialog } from "@/components/roles/role-form-dialog"
 import { Button } from "@/components/ui/button"
 import { RolePermissionSummary } from "@/components/roles/role-permission-summary"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,20 +40,54 @@ function sortRolesByHierarchy(roles: Role[]) {
   return [...roles].sort((a, b) => rank(a) - rank(b) || b.permissions.length - a.permissions.length)
 }
 
+// Misma estructura que la tarjeta de rol (cabecera, 4 áreas con 3/4/2/2 filas, botones)
+const SKELETON_AREA_ROWS = [3, 4, 2, 2]
+
+function RoleCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="gap-2">
+        <Skeleton className="h-5 w-28" />
+        <Skeleton className="h-4 w-4/5" />
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          {SKELETON_AREA_ROWS.map((rows, i) => (
+            <Skeleton key={i} style={{ height: 46 + rows * 22 }} className="w-full rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-8 w-full" />
+      </CardContent>
+    </Card>
+  )
+}
+
 function RolesGrid() {
   const { fetcher } = useAuth()
   const [roles, setRoles] = React.useState<Role[]>([])
+  // loading: primera carga (skeleton). refreshing: recargas con datos ya visibles (spinner discreto)
   const [loading, setLoading] = React.useState(true)
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [loadError, setLoadError] = React.useState(false)
   const [deleteTarget, setDeleteTarget] = React.useState<Role | null>(null)
+  const [deleting, setDeleting] = React.useState(false)
+  const loadedRef = React.useRef(false)
 
   const load = React.useCallback(async () => {
-    setLoading(true)
+    if (loadedRef.current) setRefreshing(true)
+    else {
+      setLoading(true)
+      setLoadError(false)
+    }
     try {
       setRoles(sortRolesByHierarchy(await rolesApi.listRoles(fetcher)))
+      loadedRef.current = true
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los roles")
+      if (!loadedRef.current) setLoadError(true)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }, [fetcher])
 
@@ -59,7 +96,8 @@ function RolesGrid() {
   }, [load])
 
   async function handleDelete() {
-    if (!deleteTarget) return
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
     try {
       await rolesApi.deleteRole(fetcher, deleteTarget._id)
       toast.success("Rol eliminado")
@@ -67,6 +105,8 @@ function RolesGrid() {
       load()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el rol")
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -75,7 +115,11 @@ function RolesGrid() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Roles y permisos</h1>
-          <p className="text-sm text-muted-foreground">Controla qué puede hacer cada tipo de usuario.</p>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Controla qué puede hacer cada tipo de usuario.</span>
+            {/* Ancho reservado para que el texto no salte al aparecer el spinner */}
+            <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
+          </p>
         </div>
         <RoleFormDialog
           onSaved={load}
@@ -88,12 +132,19 @@ function RolesGrid() {
         />
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full" />
-          ))}
-        </div>
+      <LoadingGate
+        loading={loading}
+        onRetry={load}
+        skeleton={
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <RoleCardSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+      {loadError ? (
+        <LoadError title="No se pudieron cargar los roles" onRetry={load} />
       ) : (
         // <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
@@ -139,6 +190,7 @@ function RolesGrid() {
           ))}
         </div>
       )}
+      </LoadingGate>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
@@ -150,7 +202,17 @@ function RolesGrid() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                // Mantiene el diálogo abierto mientras se elimina
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={deleting}
+            >
+              {deleting ? <Spinner data-icon="inline-start" /> : null}
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

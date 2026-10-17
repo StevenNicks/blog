@@ -6,8 +6,10 @@ import { toast } from "sonner"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
+import { PostFormSkeleton } from "@/components/loading/post-form-skeleton"
 import { PostForm } from "@/components/posts/post-form"
-import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError } from "@/lib/api/client"
 import * as postsApi from "@/lib/api/posts"
 import type { Post } from "@/lib/types"
@@ -18,18 +20,29 @@ function EditPostContent() {
   const router = useRouter()
   const [post, setPost] = React.useState<Post | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [loadError, setLoadError] = React.useState(false)
+  // Cambiar este valor vuelve a lanzar la carga (botón "Reintentar")
+  const [attempt, setAttempt] = React.useState(0)
 
   React.useEffect(() => {
     let active = true
     setLoading(true)
+    setLoadError(false)
     postsApi
       .getPost(fetcher, slug)
       .then((data) => {
         if (active) setPost(data)
       })
       .catch((err) => {
+        if (!active) return
+        if (err instanceof ApiError && err.status === 404) {
+          // El post ya no existe: no hay nada que reintentar
+          toast.error(err.message)
+          router.push("/dashboard/posts")
+          return
+        }
         toast.error(err instanceof ApiError ? err.message : "No se pudo cargar el post")
-        router.push("/dashboard/posts")
+        setLoadError(true)
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -37,20 +50,19 @@ function EditPostContent() {
     return () => {
       active = false
     }
-  }, [slug, fetcher, router])
+  }, [slug, fetcher, router, attempt])
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-96 w-full" />
-      </div>
-    )
-  }
+  const retry = () => setAttempt((n) => n + 1)
 
-  if (!post) return null
-
-  return <PostForm mode="edit" initialPost={post} />
+  return (
+    <LoadingGate loading={loading} skeleton={<PostFormSkeleton />} onRetry={retry}>
+      {loadError ? (
+        <LoadError title="No se pudo cargar el post" onRetry={retry} />
+      ) : post ? (
+        <PostForm mode="edit" initialPost={post} />
+      ) : null}
+    </LoadingGate>
+  )
 }
 
 export default function EditPostPage() {

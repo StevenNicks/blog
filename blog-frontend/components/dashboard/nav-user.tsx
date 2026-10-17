@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ChevronsUpDownIcon, GlobeIcon, LogOutIcon, UserIcon } from "lucide-react"
@@ -16,11 +17,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+import { Spinner } from "@/components/ui/spinner"
 
 export function NavUser() {
   const { user, logout } = useAuth()
   const { isMobile } = useSidebar()
   const router = useRouter()
+  const [loggingOut, setLoggingOut] = React.useState(false)
 
   if (!user) return null
 
@@ -77,13 +80,22 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onClick={async () => {
-                await logout()
-                router.push("/")
+              disabled={loggingOut}
+              onSelect={async (e) => {
+                // Mantiene el menú abierto para mostrar el spinner mientras se cierra la sesión
+                e.preventDefault()
+                if (loggingOut) return
+                setLoggingOut(true)
+                try {
+                  await logout()
+                  router.push("/")
+                } finally {
+                  setLoggingOut(false)
+                }
               }}
             >
-              <LogOutIcon />
-              Cerrar sesión
+              {loggingOut ? <Spinner data-icon="inline-start" /> : <LogOutIcon />}
+              {loggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

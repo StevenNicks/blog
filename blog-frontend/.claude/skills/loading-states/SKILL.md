@@ -24,8 +24,9 @@ Nunca uses un overlay de pantalla completa para cargar contenido de una página.
 
 ## 2. Patrones del proyecto (mantenerlos)
 
-- **Botón con acción:** `disabled={loading}` y `{loading ? <Spinner data-icon="inline-start" /> : null}` dentro del `Button`. El texto del botón puede cambiar ("Guardando…") pero no el ancho debe saltar.
+- **Botón con acción:** `disabled={loading}` y `{loading ? <Spinner data-icon="inline-start" /> : null}` dentro del `Button`. El texto del botón puede cambiar ("Guardando…"), pero el ancho no debe saltar.
 - **Listas del dashboard:** `loading ? <Skeleton key={i} className="h-N w-full" /> ×N : contenido`, con la misma altura aproximada que el elemento real.
+- **Recarga con datos ya visibles:** no volver a mostrar el skeleton; mantener el contenido y mostrar un indicador pequeño (spinner discreto) mientras se actualiza.
 - **`loading.tsx` del sitio público:** devolver un skeleton con la forma del contenido final, dentro del layout (header y footer visibles). No usar `<Loader />` aquí.
 - **`Loader`** (`fixed inset-0`) queda reservado para `require-auth`.
 
@@ -53,6 +54,7 @@ Nunca uses un overlay de pantalla completa para cargar contenido de una página.
 - [ ] ¿Elegí el loader correcto según la tabla de la sección 1?
 - [ ] ¿Hay estado de carga, de error y vacío?
 - [ ] ¿Mi skeleton coincide con el layout final y no hay saltos?
+- [ ] ¿En recargas mantuve el contenido visible en vez de volver al skeleton?
 - [ ] ¿Los botones de acción se deshabilitan y muestran `Spinner`?
 - [ ] ¿Cumple la sección de accesibilidad (aria, español, reduced-motion)?
 - [ ] ¿Reutilicé los componentes existentes en vez de crear nuevos?
@@ -61,6 +63,7 @@ Nunca uses un overlay de pantalla completa para cargar contenido de una página.
 
 - **Barra de progreso en subidas: descartada por ahora.** La única subida es `uploadImages` (`images/page.tsx` y `image-picker-dialog.tsx`), con archivos de máx. 5 MB (`UPLOAD_MAX_MB`) en servidor local: dura menos de un segundo, así que basta el spinner en el botón. `fetch` no expone progreso de subida; habría que usar `XMLHttpRequest`/axios y adaptar `lib/api/client.ts`. Reconsiderar solo si sube el límite de tamaño, se permiten vídeos/PDF, hay usuarios con conexiones lentas o subidas masivas.
 - **Dots:** no aplican mientras no exista chat ni comentarios en vivo.
+- **Exentos de las reglas de tiempo (§3.3):** los placeholders con espacio reservado (p. ej. el `Skeleton` del header, de las estadísticas de la home o del formulario de comentarios) y el `Loader` de `require-auth`. Los primeros ya ocupan su sitio, así que mostrarlos al instante no provoca parpadeo ni saltos; el `Loader` solo tiene retraso de aparición, sin duración mínima, porque se desmonta en cuanto se resuelve la sesión. Los skeletons de contenido de listas y páginas sí usan `LoadingGate` (retraso ~200 ms, mínimo ~400 ms), que mantiene la altura del contenedor durante el retraso.
 - **Ya aplicado:** skeletons en `loading.tsx` del sitio (`components/loading/`), espacio reservado en el header y en comentarios, `Spinner` accesible y `Loader` con retraso (solo `require-auth`).
 
 ## Nota sobre Next.js

@@ -11,7 +11,10 @@ import { UserAvatar } from "@/components/user-avatar"
 import { CommentStatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
 import {
   DropdownMenu,
@@ -44,27 +47,45 @@ const statusOptions: { value: CommentStatus | "all"; label: string }[] = [
 function CommentsModerationTable() {
   const { fetcherPaged, fetcher } = useAuth()
   const [comments, setComments] = React.useState<commentsApi.CommentWithPost[]>([])
+  // loading: primera carga (skeleton). refreshing: recargas con datos ya visibles (spinner discreto)
   const [loading, setLoading] = React.useState(true)
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [loadError, setLoadError] = React.useState(false)
   const [status, setStatus] = React.useState<CommentStatus | "all">("all")
   const [page, setPage] = React.useState(1)
   const [pages, setPages] = React.useState(1)
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
+  const [deleting, setDeleting] = React.useState(false)
+  const [busyIds, setBusyIds] = React.useState<Set<string>>(new Set())
+  const loadedRef = React.useRef(false)
+  const requestRef = React.useRef(0)
 
-  // silent: refresca sin mostrar el skeleton (tras moderar o eliminar, la lista ya está en pantalla)
-  const load = React.useCallback(async (silent = false) => {
-    if (!silent) setLoading(true)
+  const load = React.useCallback(async () => {
+    const requestId = ++requestRef.current
+    if (loadedRef.current) setRefreshing(true)
+    else {
+      setLoading(true)
+      setLoadError(false)
+    }
     try {
       const { data, meta } = await commentsApi.listAllComments(fetcherPaged, {
         page,
         limit: 15,
         status: status === "all" ? undefined : status,
       })
+      if (requestId !== requestRef.current) return
       setComments(data)
       setPages(meta?.pages ?? 1)
+      loadedRef.current = true
     } catch (err) {
+      if (requestId !== requestRef.current) return
       toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los comentarios")
+      if (!loadedRef.current) setLoadError(true)
     } finally {
-      setLoading(false)
+      if (requestId === requestRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [fetcherPaged, page, status])
 
@@ -72,27 +93,42 @@ function CommentsModerationTable() {
     load()
   }, [load])
 
+  function setBusy(id: string, on: boolean) {
+    setBusyIds((prev) => {
+      const next = new Set(prev)
+      if (on) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
   async function handleModerate(id: string, next: "approved" | "pending" | "spam") {
+    setBusy(id, true)
     try {
       await commentsApi.moderateComment(fetcher, id, next)
       toast.success(
         next === "approved" ? "Comentario aprobado" : next === "pending" ? "Marcado como pendiente" : "Marcado como spam"
       )
-      load(true)
+      await load()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el comentario")
+    } finally {
+      setBusy(id, false)
     }
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
     try {
       await commentsApi.deleteComment(fetcher, deleteTarget)
       toast.success("Comentario eliminado")
       setDeleteTarget(null)
-      load(true)
+      load()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el comentario")
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -100,7 +136,11 @@ function CommentsModerationTable() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Comentarios</h1>
-        <p className="text-sm text-muted-foreground">Modera los comentarios publicados en el blog.</p>
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Modera los comentarios publicados en el blog.</span>
+          {/* Ancho reservado para que el texto no salte al aparecer el spinner */}
+          <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
+        </p>
       </div>
 
       <Select
@@ -124,12 +164,19 @@ function CommentsModerationTable() {
         </SelectContent>
       </Select>
 
-      {loading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
-        </div>
+      <LoadingGate
+        loading={loading}
+        onRetry={load}
+        skeleton={
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        }
+      >
+      {loadError ? (
+        <LoadError title="No se pudieron cargar los comentarios" onRetry={load} />
       ) : comments.length === 0 ? (
         <StackedCardsEmpty
           className="min-h-[40vh]"
@@ -162,8 +209,8 @@ function CommentsModerationTable() {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon-sm">
-                    <MoreHorizontalIcon />
+                  <Button variant="ghost" size="icon-sm" disabled={busyIds.has(comment._id)}>
+                    {busyIds.has(comment._id) ? <Spinner /> : <MoreHorizontalIcon />}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -195,6 +242,7 @@ function CommentsModerationTable() {
           ))}
         </div>
       )}
+      </LoadingGate>
 
       {pages > 1 ? (
         <div className="flex items-center justify-between">
@@ -222,7 +270,17 @@ function CommentsModerationTable() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                // Mantiene el diálogo abierto mientras se elimina
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={deleting}
+            >
+              {deleting ? <Spinner data-icon="inline-start" /> : null}
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

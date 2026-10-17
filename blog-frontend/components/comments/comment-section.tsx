@@ -61,6 +61,8 @@ interface CommentRowProps {
   isReplying: boolean
   replyText: string
   submitting: boolean
+  /** Hay una acción de moderación en curso sobre este comentario. */
+  busy: boolean
   onReplyTextChange: (value: string) => void
   onToggleReply: () => void
   onCancelReply: () => void
@@ -78,6 +80,7 @@ function CommentRow({
   isReplying,
   replyText,
   submitting,
+  busy,
   onReplyTextChange,
   onToggleReply,
   onCancelReply,
@@ -118,8 +121,8 @@ function CommentRow({
             {canDelete || canModerate ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
-                    <MoreVerticalIcon />
+                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground" disabled={busy}>
+                    {busy ? <Spinner /> : <MoreVerticalIcon />}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -160,6 +163,7 @@ function CommentRow({
                   Cancelar
                 </Button>
                 <Button size="sm" disabled={submitting || !replyText.trim()} onClick={onSubmitReply}>
+                  {submitting ? <Spinner data-icon="inline-start" /> : null}
                   Responder
                 </Button>
               </div>
@@ -179,6 +183,8 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
   const [replyTo, setReplyTo] = React.useState<string | null>(null)
   const [replyText, setReplyText] = React.useState("")
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
+  const [deleting, setDeleting] = React.useState(false)
+  const [busyIds, setBusyIds] = React.useState<Set<string>>(new Set())
 
   const canModerate = hasPermission("comments:moderate")
 
@@ -212,17 +218,25 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
   }
 
   async function handleModerate(id: string, moderateStatus: "approved" | "spam") {
+    setBusyIds((prev) => new Set(prev).add(id))
     try {
       const updated = await commentsApi.moderateComment(fetcher, id, moderateStatus)
       setComments((prev) => prev.map((c) => (c._id === id ? updated : c)))
       toast.success(moderateStatus === "approved" ? "Comentario aprobado" : "Comentario marcado como spam")
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el comentario")
+    } finally {
+      setBusyIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     }
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
     try {
       await commentsApi.deleteComment(fetcher, deleteTarget)
       setComments((prev) => prev.filter((c) => c._id !== deleteTarget))
@@ -230,6 +244,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el comentario")
     } finally {
+      setDeleting(false)
       setDeleteTarget(null)
     }
   }
@@ -304,6 +319,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
             <div key={comment._id} className="flex flex-col gap-4">
               <CommentRow
                 comment={comment}
+                busy={busyIds.has(comment._id)}
                 isReplying={replyTo === comment._id}
                 onToggleReply={() => setReplyTo(replyTo === comment._id ? null : comment._id)}
                 onSubmitReply={() => submitComment(replyText, comment._id)}
@@ -313,6 +329,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
                 <CommentRow
                   key={reply._id}
                   comment={reply}
+                  busy={busyIds.has(reply._id)}
                   isReply
                   isReplying={false}
                   onToggleReply={() => {}}
@@ -333,7 +350,17 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                // Mantiene el diálogo abierto mientras se elimina
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={deleting}
+            >
+              {deleting ? <Spinner data-icon="inline-start" /> : null}
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

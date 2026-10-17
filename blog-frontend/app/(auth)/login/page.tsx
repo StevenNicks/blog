@@ -7,6 +7,7 @@ import { CircleCheckIcon, LogInIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { useAuth } from "@/components/providers/auth-provider"
+import { AuthCardSkeleton } from "@/components/loading/auth-card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,7 +22,7 @@ const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
 
 export default function LoginPage() {
   return (
-    <React.Suspense fallback={<Spinner className="size-6" />}>
+    <React.Suspense fallback={<AuthCardSkeleton />}>
       <LoginForm />
     </React.Suspense>
   )

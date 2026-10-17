@@ -44,7 +44,8 @@ export function PostListSkeleton() {
           <Skeleton className="h-9 w-full max-w-md" />
         </section>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {/* La página real pide 9 posts por página (3 filas en escritorio) */}
+          {Array.from({ length: 9 }).map((_, i) => (
             <PostCardSkeleton key={i} />
           ))}
         </div>

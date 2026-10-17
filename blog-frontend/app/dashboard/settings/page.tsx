@@ -10,7 +10,10 @@ import { useAuth } from "@/components/providers/auth-provider"
 import { notifyBackgroundChanged } from "@/components/layout/background-sync"
 import { BackgroundPatternView } from "@/components/layout/site-background"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { LoadError } from "@/components/loading/load-error"
+import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
 import { ApiError } from "@/lib/api/client"
 import * as settingsApi from "@/lib/api/settings"
 import { cn } from "@/lib/utils"
@@ -45,27 +48,41 @@ function AppearanceSettings() {
   const router = useRouter()
   const [pattern, setPattern] = React.useState<BackgroundPattern | null>(null)
   const [saving, setSaving] = React.useState<BackgroundPattern | null>(null)
+  const [loadError, setLoadError] = React.useState(false)
+  // Solo la última selección aplica su resultado (se puede elegir otra opción mientras se guarda)
+  const lastRequest = React.useRef(0)
 
-  React.useEffect(() => {
+  const loadSettings = React.useCallback(() => {
+    setLoadError(false)
     settingsApi
       .getSettingsPublic()
       .then((s) => setPattern(s.backgroundPattern))
-      .catch(() => toast.error("No se pudieron cargar los ajustes"))
+      .catch(() => {
+        toast.error("No se pudieron cargar los ajustes")
+        setLoadError(true)
+      })
   }, [])
 
+  React.useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
+
   async function handleSelect(value: BackgroundPattern) {
-    if (value === pattern || saving) return
+    if (value === pattern || value === saving) return
+    const requestId = ++lastRequest.current
     setSaving(value)
     try {
       const updated = await settingsApi.updateSettings(fetcher, { backgroundPattern: value })
+      if (requestId !== lastRequest.current) return
       setPattern(updated.backgroundPattern)
       router.refresh()
       notifyBackgroundChanged()
       toast.success("Patrón de fondo actualizado")
     } catch (err) {
+      if (requestId !== lastRequest.current) return
       toast.error(err instanceof ApiError ? err.message : "No se pudo guardar el ajuste")
     } finally {
-      setSaving(null)
+      if (requestId === lastRequest.current) setSaving(null)
     }
   }
 
@@ -84,23 +101,36 @@ function AppearanceSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {pattern === null ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {PATTERN_OPTIONS.map((o) => (
-                <Skeleton key={o.value} className="h-52 w-full" />
-              ))}
-            </div>
+          {loadError ? (
+            <LoadError
+              className="min-h-52"
+              title="No se pudieron cargar los ajustes"
+              onRetry={loadSettings}
+            />
           ) : (
+          <LoadingGate
+            loading={pattern === null}
+            onRetry={loadSettings}
+            skeleton={
+              <div className="grid gap-4 sm:grid-cols-3">
+                {PATTERN_OPTIONS.map((o) => (
+                  <Skeleton key={o.value} className="h-52 w-full" />
+                ))}
+              </div>
+            }
+          >
             <div role="radiogroup" aria-label="Patrón de fondo" className="grid gap-4 sm:grid-cols-3">
               {PATTERN_OPTIONS.map((option) => {
                 const selected = option.value === pattern
+                const isSaving = option.value === saving
                 return (
                   <button
                     key={option.value}
                     type="button"
                     role="radio"
                     aria-checked={selected}
-                    disabled={saving !== null}
+                    aria-busy={isSaving}
+                    disabled={isSaving}
                     onClick={() => handleSelect(option.value)}
                     className={cn(
                       "overflow-hidden rounded-xl border text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-70",
@@ -115,12 +145,17 @@ function AppearanceSettings() {
                         <p className="text-sm font-medium">{option.title}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">{option.description}</p>
                       </div>
-                      {selected ? <CheckIcon className="size-4 shrink-0 text-primary" /> : null}
+                      {isSaving ? (
+                        <Spinner className="shrink-0 text-primary" />
+                      ) : selected ? (
+                        <CheckIcon className="size-4 shrink-0 text-primary" />
+                      ) : null}
                     </div>
                   </button>
                 )
               })}
             </div>
+          </LoadingGate>
           )}
         </CardContent>
       </Card>
