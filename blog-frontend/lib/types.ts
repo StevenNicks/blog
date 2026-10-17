@@ -99,6 +99,7 @@ export const PERMISSIONS = [
   "posts:delete:own",
   "posts:delete:any",
   "comments:create",
+  "comments:edit:own",
   "comments:moderate",
   "comments:delete:own",
   "comments:delete:any",

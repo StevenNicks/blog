@@ -8,7 +8,7 @@ import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
 import { RoleFormDialog } from "@/components/roles/role-form-dialog"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { RolePermissionSummary } from "@/components/roles/role-permission-summary"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -25,6 +25,18 @@ import { ApiError } from "@/lib/api/client"
 import * as rolesApi from "@/lib/api/roles"
 import type { Role } from "@/lib/types"
 
+// Jerarquía de los roles del sistema, de mayor a menor acceso. Los roles personalizados
+// van después, ordenados por cantidad de permisos.
+const SYSTEM_ROLE_ORDER = ["admin", "editor", "author", "reader"]
+
+function sortRolesByHierarchy(roles: Role[]) {
+  const rank = (role: Role) => {
+    const index = SYSTEM_ROLE_ORDER.indexOf(role.name)
+    return index === -1 ? SYSTEM_ROLE_ORDER.length : index
+  }
+  return [...roles].sort((a, b) => rank(a) - rank(b) || b.permissions.length - a.permissions.length)
+}
+
 function RolesGrid() {
   const { fetcher } = useAuth()
   const [roles, setRoles] = React.useState<Role[]>([])
@@ -34,7 +46,7 @@ function RolesGrid() {
   const load = React.useCallback(async () => {
     setLoading(true)
     try {
-      setRoles(await rolesApi.listRoles(fetcher))
+      setRoles(sortRolesByHierarchy(await rolesApi.listRoles(fetcher)))
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los roles")
     } finally {
@@ -84,34 +96,26 @@ function RolesGrid() {
         </div>
       ) : (
         // <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
           {roles.map((role) => (
             <Card key={role._id}>
               <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                <div>
+                <div className="min-w-0 flex-1">
                   <CardTitle className="flex items-center gap-2 font-heading text-base capitalize">
                     <ShieldIcon className="size-4 text-muted-foreground" />
                     {role.name}
                     {role.isSystem ? <LockIcon className="size-3.5 text-muted-foreground" /> : null}
                   </CardTitle>
-                  <p className="mt-1 text-sm text-muted-foreground">{role.description || "Sin descripción"}</p>
+                  <p
+                    className="mt-1 truncate text-sm text-muted-foreground"
+                    title={role.description || undefined}
+                  >
+                    {role.description || "Sin descripción"}
+                  </p>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-wrap gap-1.5">
-                  {role.permissions.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">Sin permisos asignados</span>
-                  ) : (
-                    role.permissions.slice(0, 4).map((p) => (
-                      <Badge key={p} variant="outline" className="font-mono text-[10px]">
-                        {p}
-                      </Badge>
-                    ))
-                  )}
-                  {role.permissions.length > 4 ? (
-                    <Badge variant="secondary">+{role.permissions.length - 4}</Badge>
-                  ) : null}
-                </div>
+                <RolePermissionSummary permissions={role.permissions} />
                 <div className="flex gap-2">
                   <RoleFormDialog
                     role={role}

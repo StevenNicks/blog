@@ -21,6 +21,7 @@ const roles = [
       PERM.POSTS_EDIT_ANY,
       PERM.POSTS_DELETE_ANY,
       PERM.COMMENTS_CREATE,
+      PERM.COMMENTS_EDIT_OWN,
       PERM.COMMENTS_MODERATE,
       PERM.COMMENTS_DELETE_ANY,
       PERM.IMAGES_UPLOAD,
@@ -36,6 +37,7 @@ const roles = [
       PERM.POSTS_EDIT_OWN,
       PERM.POSTS_DELETE_OWN,
       PERM.COMMENTS_CREATE,
+      PERM.COMMENTS_EDIT_OWN,
       PERM.COMMENTS_DELETE_OWN,
       PERM.IMAGES_UPLOAD,
       PERM.IMAGES_DELETE_OWN,
@@ -45,7 +47,7 @@ const roles = [
     name: 'reader',
     description: 'Puede comentar en los posts publicados',
     isSystem: true,
-    permissions: [PERM.COMMENTS_CREATE, PERM.COMMENTS_DELETE_OWN],
+    permissions: [PERM.COMMENTS_CREATE, PERM.COMMENTS_EDIT_OWN, PERM.COMMENTS_DELETE_OWN],
   },
 ];
 

@@ -75,6 +75,11 @@ const updateComment = catchAsync(async (req, res) => {
   if (!req.user._id.equals(comment.author)) {
     throw new ApiError(403, 'Solo puedes editar tus propios comentarios.');
   }
+  const canEditOwn =
+    req.user.role.name === 'admin' || req.user.role.permissions.includes(PERM.COMMENTS_EDIT_OWN);
+  if (!canEditOwn) {
+    throw new ApiError(403, 'No tienes permiso para editar comentarios.');
+  }
 
   comment.content = req.body.content;
   await comment.save();

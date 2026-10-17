@@ -6,6 +6,7 @@ module.exports = {
   POSTS_DELETE_ANY: 'posts:delete:any',
 
   COMMENTS_CREATE: 'comments:create',
+  COMMENTS_EDIT_OWN: 'comments:edit:own',
   COMMENTS_MODERATE: 'comments:moderate',
   COMMENTS_DELETE_OWN: 'comments:delete:own',
   COMMENTS_DELETE_ANY: 'comments:delete:any',

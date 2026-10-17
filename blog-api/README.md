@@ -60,6 +60,7 @@ chequeo de permisos. Los demás roles se evalúan contra permisos concretos:
 | `posts:edit:own` / `posts:edit:any` | Editar posts propios / de cualquiera |
 | `posts:delete:own` / `posts:delete:any` | Eliminar posts propios / de cualquiera |
 | `comments:create` | Comentar |
+| `comments:edit:own` | Editar sus propios comentarios |
 | `comments:moderate` | Ver/aprobar/marcar como spam cualquier comentario |
 | `comments:delete:own` / `comments:delete:any` | Eliminar comentarios propios / de cualquiera |
 | `users:manage` | Listar, editar rol, activar/desactivar y eliminar usuarios |
