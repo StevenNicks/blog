@@ -72,7 +72,13 @@ const admin: NavConfigItem[] = [
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { hasPermission, fetcherPaged } = useAuth()
-  const { state: sidebarState, isMobile } = useSidebar()
+  const { state: sidebarState, isMobile, setOpenMobile } = useSidebar()
+
+  // En móvil el sidebar es un panel superpuesto: se cierra al elegir un destino, incluso si ya se está en él
+  // (con un efecto sobre la ruta no se cerraría). Los clics del menú del usuario también burbujean hasta aquí.
+  function closeOnLinkClick(event: React.MouseEvent) {
+    if (isMobile && (event.target as HTMLElement).closest("a[href]")) setOpenMobile(false)
+  }
   const canModerate = hasPermission("comments:moderate")
   const [pendingComments, setPendingComments] = React.useState(0)
 
@@ -120,7 +126,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader onClick={closeOnLinkClick}>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Blog" className="group-data-[collapsible=icon]:bg-sidebar-accent">
@@ -158,12 +164,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </Tooltip>
         )}
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent onClick={closeOnLinkClick}>
         <NavMain label="Contenido" items={contentItems} />
         {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator className="mx-0" />}
         <NavMain label="Administración" items={adminItems} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter onClick={closeOnLinkClick}>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Ver blog">
