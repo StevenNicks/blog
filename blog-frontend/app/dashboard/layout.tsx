@@ -3,7 +3,6 @@ import { cookies } from "next/headers"
 import { RequireAuth } from "@/components/require-auth"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { DashboardBreadcrumb } from "@/components/dashboard/dashboard-breadcrumb"
-import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 
@@ -18,13 +17,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
+          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
               <Separator orientation="vertical" className="h-5 data-vertical:self-center" />
               <DashboardBreadcrumb />
             </div>
-            <ThemeToggle />
           </header>
           <div className="relative flex-1 p-4 sm:p-6">{children}</div>
         </SidebarInset>
