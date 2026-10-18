@@ -123,7 +123,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="Blog">
+            <SidebarMenuButton size="lg" asChild tooltip="Blog" className="group-data-[collapsible=icon]:bg-sidebar-accent">
               <Link href="/dashboard">
                 {/* size-6! anula el [&_svg]:size-4 que el botón aplica a sus iconos; con la barra
                     contraída el botón mide 32px sin padding, ml-1 centra el logo de 24px */}
@@ -142,11 +142,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <TooltipTrigger asChild>
               <Button
                 asChild
-                className="w-full gap-2 px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-0"
+                className="w-full gap-2 overflow-hidden px-2 transition-[width,height] duration-200 ease-linear group-data-[collapsible=icon]:size-8 motion-reduce:transition-none"
               >
                 <Link href="/dashboard/posts/new">
                   <PlusIcon />
-                  <span className="group-data-[collapsible=icon]:hidden">Nuevo post</span>
+                  <span className="max-w-20 whitespace-nowrap transition-[max-width,margin,opacity] [transition-duration:200ms,200ms,100ms] [transition-delay:0ms,0ms,100ms] ease-linear group-data-[collapsible=icon]:-ml-2 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:[transition-delay:0ms] motion-reduce:transition-none">
+                    Nuevo post
+                  </span>
                 </Link>
               </Button>
             </TooltipTrigger>
