@@ -41,3 +41,10 @@ export function verifyEmailRequest(input: { token: string }) {
 export function sendVerificationRequest(fetcher: Fetcher) {
   return fetcher<{ message: string; delivered: boolean }>("/auth/send-verification", { method: "POST" })
 }
+
+export function changePasswordRequest(
+  fetcher: Fetcher,
+  input: { currentPassword: string; newPassword: string }
+) {
+  return fetcher<{ message: string }>("/auth/change-password", { method: "POST", body: input })
+}

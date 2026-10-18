@@ -24,6 +24,15 @@ const resetPasswordValidator = [
     .withMessage('La contraseña debe tener al menos 8 caracteres'),
 ];
 
+const changePasswordValidator = [
+  body('currentPassword').notEmpty().withMessage('La contraseña actual es obligatoria'),
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('La nueva contraseña debe tener al menos 8 caracteres')
+    .custom((value, { req }) => value !== req.body.currentPassword)
+    .withMessage('La nueva contraseña debe ser distinta de la actual'),
+];
+
 const verifyEmailValidator = [body('token').notEmpty().withMessage('El token es obligatorio')];
 
 module.exports = {
@@ -32,4 +41,5 @@ module.exports = {
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
+  changePasswordValidator,
 };

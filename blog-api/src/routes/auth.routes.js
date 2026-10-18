@@ -8,6 +8,7 @@ const {
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
+  changePasswordValidator,
   verifyEmailValidator,
 } = require('../validators/auth.validator');
 
@@ -21,6 +22,7 @@ const makeLimiter = (max) =>
 const forgotLimiter = makeLimiter(5);
 const resetLimiter = makeLimiter(10);
 const verifyLimiter = makeLimiter(5);
+const changePasswordLimiter = makeLimiter(10);
 
 router.post(
   '/forgot-password',
@@ -35,6 +37,14 @@ router.post(
   resetPasswordValidator,
   validate,
   authController.resetPassword
+);
+router.post(
+  '/change-password',
+  protect,
+  changePasswordLimiter,
+  changePasswordValidator,
+  validate,
+  authController.changePassword
 );
 router.post('/send-verification', protect, verifyLimiter, authController.sendVerification);
 router.post(

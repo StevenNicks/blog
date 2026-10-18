@@ -232,6 +232,26 @@ const resetPassword = catchAsync(async (req, res) => {
   res.json({ success: true, data: { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' } });
 });
 
+// Cambio de contraseña con sesión iniciada: exige la actual y cierra las demás sesiones (conserva esta).
+// Una contraseña actual incorrecta responde 400 (no 401) para que el frontend no lo confunda con un token caducado.
+const changePassword = catchAsync(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id).select('+password');
+  if (!(await user.comparePassword(currentPassword))) {
+    throw new ApiError(400, 'La contraseña actual es incorrecta.');
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  const current = req.cookies?.[REFRESH_COOKIE];
+  const keep = current ? { token: { $ne: hashToken(current) } } : {};
+  await Token.updateMany({ user: user._id, ...keep }, { revoked: true });
+
+  res.json({ success: true, data: { message: 'Contraseña actualizada. Se cerraron tus otras sesiones.' } });
+});
+
 module.exports = {
   register,
   login,
@@ -240,6 +260,7 @@ module.exports = {
   me,
   forgotPassword,
   resetPassword,
+  changePassword,
   sendVerification,
   verifyEmail,
 };
