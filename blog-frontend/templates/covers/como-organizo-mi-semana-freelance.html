@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;background:#0b0b0d;font-family:"DejaVu Sans",Arial,sans-serif;overflow:hidden;position:relative}
+.grid{position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:40px 40px}
+.glow{position:absolute;width:700px;height:700px;right:-150px;top:-120px;background:radial-gradient(circle,#8bd44a33,transparent 65%)}
+.left{position:absolute;left:80px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;width:560px}
+.tag{display:inline-block;color:#8bd44a;border:2px solid #8bd44a55;background:#8bd44a14;padding:8px 18px;border-radius:999px;font-size:22px;font-weight:bold;letter-spacing:2px;margin-bottom:28px;width:fit-content}
+h1{color:#f5f5f5;font-size:62px;line-height:1.1;font-weight:bold}
+h1 span{color:#8bd44a}
+.term{margin-top:36px;background:#18181b;border:1px solid #2a2a2e;border-radius:12px;padding:18px 22px;font-family:"DejaVu Sans Mono",monospace;font-size:22px;color:#d4d4d8;width:fit-content}
+.term b{color:#8bd44a}
+.stack{position:absolute;right:110px;top:110px;width:400px;height:410px}
+.cal{position:absolute;left:0;top:0;width:400px;height:410px;border-radius:14px;border:3px solid #8bd44a;background:linear-gradient(160deg,#1f2a17,#141414);box-shadow:0 20px 40px #0008}
+.cal .hd{position:absolute;left:0;right:0;top:0;height:62px;border-bottom:3px solid #8bd44a55}
+.cal .dot{position:absolute;top:20px;width:18px;height:18px;border-radius:50%;background:#8bd44a}
+.cell{position:absolute;width:56px;height:56px;border-radius:10px;border:3px solid #3f3f46;background:#18181b}
+.cell.on{border-color:#8bd44a;background:#8bd44a33}
+.cell.full{border-color:#8bd44a;background:#8bd44a}
+</style></head><body>
+<div class="grid"></div><div class="glow"></div>
+<div class="left">
+  <div class="tag">CARRERA</div>
+  <h1>Cómo organizo<br>mi semana<br><span>freelance</span></h1>
+  <div class="term"><b>$</b> crontab -e # lun-vie 09:00</div>
+</div>
+<div class="stack">
+  <div class="cal"><div class="hd"></div><div class="dot" style="left:28px"></div><div class="dot" style="left:60px;opacity:.5"></div>
+    <div class="cell on" style="left:26px;top:92px"></div><div class="cell on" style="left:94px;top:92px"></div><div class="cell" style="left:162px;top:92px"></div><div class="cell on" style="left:230px;top:92px"></div><div class="cell" style="left:298px;top:92px"></div>
+    <div class="cell" style="left:26px;top:168px"></div><div class="cell on" style="left:94px;top:168px"></div><div class="cell on" style="left:162px;top:168px"></div><div class="cell" style="left:230px;top:168px"></div><div class="cell on" style="left:298px;top:168px"></div>
+    <div class="cell on" style="left:26px;top:244px"></div><div class="cell" style="left:94px;top:244px"></div><div class="cell on" style="left:162px;top:244px"></div><div class="cell on" style="left:230px;top:244px"></div><div class="cell" style="left:298px;top:244px"></div>
+    <div class="cell" style="left:26px;top:320px"></div><div class="cell" style="left:94px;top:320px"></div><div class="cell on" style="left:162px;top:320px"></div><div class="cell" style="left:230px;top:320px"></div><div class="cell full" style="left:298px;top:320px"></div>
+  </div>
+</div>
+</body></html>

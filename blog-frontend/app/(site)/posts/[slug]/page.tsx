@@ -79,6 +79,7 @@ export default async function PostPage({ params }: PostPageProps) {
             alt={post.coverImage.alt || post.title}
             fill
             sizes="(min-width: 768px) 768px, 100vw"
+            quality={90}
             className="object-cover"
             priority
           />

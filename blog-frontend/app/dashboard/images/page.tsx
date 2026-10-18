@@ -171,7 +171,7 @@ function ImagesLibrary() {
           {images.map((image) => (
             <div key={image._id} className="group relative overflow-hidden rounded-xl border border-border">
               <div className="relative aspect-square bg-muted">
-                <Image src={image.url} alt={image.alt || image.originalName} fill sizes="200px" className="object-cover" />
+                <Image src={image.url} alt={image.alt || image.originalName} fill sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 22vw, (min-width: 640px) 30vw, 50vw" quality={90} className="object-cover" />
               </div>
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-gradient-to-t from-black/70 to-transparent p-2 text-white opacity-0 transition-opacity group-hover:opacity-100">
                 <p className="truncate text-xs font-medium">{image.originalName}</p>

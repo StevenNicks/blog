@@ -205,7 +205,7 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
               <FieldLabel>Imagen de portada</FieldLabel>
               {coverImage ? (
                 <div className="relative aspect-video overflow-hidden rounded-lg border border-border">
-                  <Image src={coverImage.url} alt={coverImage.alt || title} fill className="object-cover" />
+                  <Image src={coverImage.url} alt={coverImage.alt || title} fill sizes="(min-width: 768px) 640px, 100vw" quality={90} className="object-cover" />
                   <Button
                     type="button"
                     variant="secondary"

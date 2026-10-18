@@ -142,7 +142,8 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
                     src={image.url}
                     alt={image.alt || image.originalName}
                     fill
-                    sizes="140px"
+                    sizes="(min-width: 640px) 180px, 40vw"
+                    quality={90}
                     className="object-cover transition-transform duration-200 group-hover:scale-105"
                   />
                 </button>

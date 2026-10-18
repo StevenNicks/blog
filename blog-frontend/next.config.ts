@@ -3,6 +3,8 @@ import type { NextConfig } from "next"
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.3.70", "192.168.1.*"],
   images: {
+    // Next 16 solo admite quality=75 por defecto; 90 evita que el texto de las portadas se vea borroso
+    qualities: [75, 90],
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "4000", pathname: "/uploads/**" },
       { protocol: "http", hostname: "192.168.3.70", port: "4000", pathname: "/uploads/**" },
