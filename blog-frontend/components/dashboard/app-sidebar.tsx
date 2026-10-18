@@ -125,9 +125,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Blog">
               <Link href="/dashboard">
-                {/* size-6! anula el [&_svg]:size-4 que el botón aplica a sus iconos. -mx-1 centra el logo
-                    de 24px en el eje de los iconos de 16px; contraído el botón mide 32px sin padding y ml-1 lo centra */}
-                <Logo className="-mx-1 size-6! group-data-[collapsible=icon]:ml-1" />
+                {/* size-6! anula el [&_svg]:size-4 que el botón aplica a sus iconos; con la barra
+                    contraída el botón mide 32px sin padding, ml-1 centra el logo de 24px */}
+                <Logo className="size-6! group-data-[collapsible=icon]:ml-1" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-heading font-semibold">Blog</span>
                   <span className="truncate text-xs text-muted-foreground">Panel de administración</span>
