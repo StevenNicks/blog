@@ -27,15 +27,14 @@ export function NavUser() {
 
   if (!user) return null
 
-  // En el botón del sidebar, -mx-1 centra el avatar de 24px en el eje de los iconos de 16px; contraído el
-  // botón mide 32px sin padding y ml-1 lo centra
-  const identity = (avatarClassName?: string) => (
+  // Contraído, el avatar de 32px llena el botón y queda centrado sin ajustes
+  const identity = (
     <>
-      <UserAvatar name={user.name} avatar={user.avatar} size="sm" className={avatarClassName} />
+      <UserAvatar name={user.name} avatar={user.avatar} size="default" />
       <div className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-medium">{user.name}</span>
         <span className="truncate text-xs text-muted-foreground">
-          <span className="capitalize">{user.role.name}</span> · {user.email}
+          {user.email}
         </span>
       </div>
     </>
@@ -51,7 +50,7 @@ export function NavUser() {
               tooltip={user.name}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {identity("-mx-1 group-data-[collapsible=icon]:ml-1")}
+              {identity}
               <ChevronsUpDownIcon className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -62,7 +61,7 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5">{identity()}</div>
+              <div className="flex items-center gap-2 px-1 py-1.5">{identity}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

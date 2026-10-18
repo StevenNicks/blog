@@ -158,7 +158,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain label="Contenido" items={contentItems} />
-        {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator />}
+        {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator className="mx-0" />}
         <NavMain label="Administración" items={adminItems} />
       </SidebarContent>
       <SidebarFooter>
@@ -172,7 +172,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SidebarSeparator />
+        <SidebarSeparator className="mx-0" />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />
