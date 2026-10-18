@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
+          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
               <Separator orientation="vertical" className="h-5 data-vertical:self-center" />

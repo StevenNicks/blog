@@ -9,6 +9,7 @@ import {
   ChevronDownIcon,
   GlobeIcon,
   ImageIcon,
+  KeyRoundIcon,
   MailIcon,
   ShieldIcon,
   Trash2Icon,
@@ -20,6 +21,7 @@ import { useAuth } from "@/components/providers/auth-provider"
 import { UserAvatar } from "@/components/user-avatar"
 import { assetUrl } from "@/lib/api/client"
 import { ImagePickerDialog } from "@/components/images/image-picker-dialog"
+import { ChangePasswordDialog } from "@/components/profile/change-password-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -118,7 +120,7 @@ function ProfileForm() {
 
   return (
     <>
-      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-1">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Mi perfil</h1>
           <p className="text-sm text-muted-foreground">Actualiza tu información pública.</p>
@@ -295,6 +297,24 @@ function ProfileForm() {
                   </Button>
                 </div>
               )}
+            </FormRow>
+
+            <FormRow label="Contraseña">
+              <InputGroup>
+                <InputGroupAddon>
+                  <KeyRoundIcon />
+                </InputGroupAddon>
+                <InputGroupInput value="••••••••" readOnly disabled aria-label="Contraseña" />
+              </InputGroup>
+              <div>
+                <ChangePasswordDialog
+                  trigger={
+                    <Button type="button" variant="link" size="xs" className="h-auto p-0 text-xs">
+                      Cambiar contraseña
+                    </Button>
+                  }
+                />
+              </div>
             </FormRow>
 
             <FormRow label="Biografía" htmlFor="bio">
