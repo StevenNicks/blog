@@ -120,7 +120,7 @@ function ProfileForm() {
 
   return (
     <>
-      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-1">
+      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-6 lg:gap-1">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Mi perfil</h1>
           <p className="text-sm text-muted-foreground">Actualiza tu información pública.</p>
