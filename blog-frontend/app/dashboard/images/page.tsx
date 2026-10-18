@@ -12,16 +12,7 @@ import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyImages } from "@/components/empty/empty-images"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import { Spinner } from "@/components/ui/spinner"
 import { ApiError } from "@/lib/api/client"
 import * as imagesApi from "@/lib/api/images"
@@ -192,7 +183,8 @@ function ImagesLibrary() {
               <Button
                 variant="destructive"
                 size="icon-sm"
-                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+                aria-label="Eliminar imagen"
+                className="absolute top-2 right-2 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                 onClick={() => setDeleteTarget(image)}
               >
                 <Trash2Icon />
@@ -221,30 +213,14 @@ function ImagesLibrary() {
         </div>
       ) : null}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar esta imagen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              No podrás eliminarla si está siendo usada como portada o dentro del contenido de algún post.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Mantiene el diálogo abierto mientras se elimina
-                e.preventDefault()
-                handleDelete()
-              }}
-              disabled={deleting}
-            >
-              {deleting ? <Spinner data-icon="inline-start" /> : null}
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="¿Eliminar esta imagen?"
+        description="No podrás eliminarla si está siendo usada como portada o dentro del contenido de algún post."
+        deleting={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

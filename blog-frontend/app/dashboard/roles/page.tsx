@@ -14,16 +14,7 @@ import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import { ApiError } from "@/lib/api/client"
 import * as rolesApi from "@/lib/api/roles"
 import type { Role } from "@/lib/types"
@@ -192,30 +183,14 @@ function RolesGrid() {
       )}
       </LoadingGate>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar el rol &quot;{deleteTarget?.name}&quot;?</AlertDialogTitle>
-            <AlertDialogDescription>
-              No podrás eliminarlo si algún usuario lo tiene asignado actualmente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Mantiene el diálogo abierto mientras se elimina
-                e.preventDefault()
-                handleDelete()
-              }}
-              disabled={deleting}
-            >
-              {deleting ? <Spinner data-icon="inline-start" /> : null}
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`¿Eliminar el rol "${deleteTarget?.name}"?`}
+        description="No podrás eliminarlo si algún usuario lo tiene asignado actualmente."
+        deleting={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

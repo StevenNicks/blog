@@ -23,16 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import { formatRelativeDate } from "@/lib/format"
 import { ApiError } from "@/lib/api/client"
 import * as commentsApi from "@/lib/api/comments"
@@ -272,28 +263,14 @@ function CommentsModerationTable() {
         </div>
       ) : null}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar comentario?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Mantiene el diálogo abierto mientras se elimina
-                e.preventDefault()
-                handleDelete()
-              }}
-              disabled={deleting}
-            >
-              {deleting ? <Spinner data-icon="inline-start" /> : null}
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="¿Eliminar comentario?"
+        description="El comentario se eliminará de forma permanente. Esta acción no se puede deshacer."
+        deleting={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

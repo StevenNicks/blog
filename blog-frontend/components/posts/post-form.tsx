@@ -17,17 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import { ApiError } from "@/lib/api/client"
 import * as postsApi from "@/lib/api/posts"
 import type { ImageAsset, Post, PostStatus } from "@/lib/types"
@@ -129,36 +119,18 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
             </Button>
           ) : null}
           {canDelete ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <ConfirmDeleteDialog
+              trigger={
                 <Button variant="destructive" type="button">
                   <Trash2Icon data-icon="inline-start" />
                   Eliminar
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>¿Eliminar este post?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta acción no se puede deshacer. El post se eliminará permanentemente.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={(e) => {
-                      // Mantiene el diálogo abierto mientras se elimina
-                      e.preventDefault()
-                      handleDelete()
-                    }}
-                    disabled={deleting}
-                  >
-                    {deleting ? <Spinner data-icon="inline-start" /> : null}
-                    Eliminar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+              title="¿Eliminar este post?"
+              description="El post se eliminará de forma permanente. Esta acción no se puede deshacer."
+              deleting={deleting}
+              onConfirm={handleDelete}
+            />
           ) : null}
           <Button type="submit" disabled={submitting}>
             {submitting ? <Spinner data-icon="inline-start" /> : null}

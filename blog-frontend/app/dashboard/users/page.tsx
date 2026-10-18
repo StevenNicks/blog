@@ -23,16 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
 import { formatDate } from "@/lib/format"
 import { ApiError } from "@/lib/api/client"
 import * as usersApi from "@/lib/api/users"
@@ -300,28 +291,14 @@ function UsersTable() {
         </div>
       ) : null}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar a &quot;{deleteTarget?.name}&quot;?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                // Mantiene el diálogo abierto mientras se elimina
-                e.preventDefault()
-                handleDelete()
-              }}
-              disabled={deleting}
-            >
-              {deleting ? <Spinner data-icon="inline-start" /> : null}
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`¿Eliminar a "${deleteTarget?.name}"?`}
+        description="Se eliminará la cuenta de forma permanente. Esta acción no se puede deshacer."
+        deleting={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }
