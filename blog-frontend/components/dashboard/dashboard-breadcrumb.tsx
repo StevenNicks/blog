@@ -24,6 +24,8 @@ const LABELS: Record<string, string> = {
   roles: "Roles",
   settings: "Ajustes",
   profile: "Mi perfil",
+  dev: "Desarrollo",
+  empties: "Estados vacíos",
 }
 
 interface Crumb {

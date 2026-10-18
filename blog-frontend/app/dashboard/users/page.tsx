@@ -16,7 +16,7 @@ import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptySearch } from "@/components/empty/empty-search"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -184,10 +184,13 @@ function UsersTable() {
       {loadError ? (
         <LoadError title="No se pudieron cargar los usuarios" onRetry={load} />
       ) : users.length === 0 ? (
-        <StackedCardsEmpty
-          className="min-h-[40vh]"
-          title="No se encontraron usuarios"
-          description="Prueba con otro término de búsqueda."
+        <EmptySearch
+          entity="usuarios"
+          query={search}
+          onClear={() => {
+            setPage(1)
+            setSearch("")
+          }}
         />
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptyImages } from "@/components/empty/empty-images"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,6 +121,10 @@ function ImagesLibrary() {
     }
   }
 
+  // Con el vacío visible, la acción vive en él; el botón del módulo solo aparece cuando no se ve.
+  // Mientras carga se reserva su espacio con un skeleton: aún no se sabe si habrá vacío y así no parpadea
+  const showEmpty = !loading && !loadError && images.length === 0
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -146,10 +150,14 @@ function ImagesLibrary() {
           className="hidden"
           onChange={(e) => handleUpload(e.target.files)}
         />
-        <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-          {uploading ? <Spinner data-icon="inline-start" /> : <UploadIcon data-icon="inline-start" />}
-          Subir imágenes
-        </Button>
+        {loading ? (
+          <Skeleton aria-hidden className="h-8 w-36 rounded-lg" />
+        ) : showEmpty ? null : (
+          <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Spinner data-icon="inline-start" /> : <UploadIcon data-icon="inline-start" />}
+            Subir imágenes
+          </Button>
+        )}
       </div>
 
       <LoadingGate
@@ -166,11 +174,7 @@ function ImagesLibrary() {
       {loadError ? (
         <LoadError title="No se pudieron cargar las imágenes" onRetry={load} />
       ) : images.length === 0 ? (
-        <StackedCardsEmpty
-          className="min-h-[40vh]"
-          title="Sin imágenes"
-          description="Sube tu primera imagen para usarla en tus posts."
-        />
+        <EmptyImages onUpload={() => fileInputRef.current?.click()} uploading={uploading} />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {images.map((image) => (

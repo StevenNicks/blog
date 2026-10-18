@@ -20,7 +20,7 @@ import { LoadingGate } from "@/components/loading/loading-gate"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptyImages } from "@/components/empty/empty-images"
 import { ApiError } from "@/lib/api/client"
 import * as imagesApi from "@/lib/api/images"
 import type { ImageAsset } from "@/lib/types"
@@ -120,10 +120,11 @@ export function ImagePickerDialog({ trigger, onSelect }: ImagePickerDialogProps)
               onRetry={loadImages}
             />
           ) : images.length === 0 ? (
-            <StackedCardsEmpty
-              className="h-80"
-              title="Sin imágenes"
-              description="Sube tu primera imagen para poder usarla en tus posts."
+            <EmptyImages
+              compact
+              className="h-80 py-0"
+              title="Tu biblioteca está vacía"
+              description="Usa «Subir imagen» para añadir la primera y seleccionarla aquí."
             />
           ) : (
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">

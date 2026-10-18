@@ -15,7 +15,8 @@ import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptyComments } from "@/components/empty/empty-comments"
+import { EmptySearch } from "@/components/empty/empty-search"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -178,11 +179,20 @@ function CommentsModerationTable() {
       {loadError ? (
         <LoadError title="No se pudieron cargar los comentarios" onRetry={load} />
       ) : comments.length === 0 ? (
-        <StackedCardsEmpty
-          className="min-h-[40vh]"
-          title="No hay comentarios"
-          description="No se encontraron comentarios con este filtro."
-        />
+        status === "all" ? (
+          <EmptyComments />
+        ) : status === "pending" ? (
+          <EmptyComments variant="caughtUp" />
+        ) : (
+          <EmptySearch
+            entity="comentarios"
+            clearLabel="Quitar filtro"
+            onClear={() => {
+              setPage(1)
+              setStatus("all")
+            }}
+          />
+        )
       ) : (
         <div className="flex flex-col gap-3">
           {comments.map((comment) => (

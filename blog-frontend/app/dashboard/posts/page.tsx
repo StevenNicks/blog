@@ -16,7 +16,8 @@ import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptyPosts } from "@/components/empty/empty-posts"
+import { EmptySearch } from "@/components/empty/empty-search"
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -115,6 +116,12 @@ function PostsTable() {
       }
    }
 
+   // Sin posts ni filtros, la acción vive en el vacío (EmptyPosts); el botón del módulo solo aparece cuando no se ve.
+   // Con filtros activos el vacío es EmptySearch, que no crea nada: el botón del módulo se mantiene.
+   // Mientras carga se reserva su espacio con un skeleton: aún no se sabe si habrá vacío y así no parpadea
+   const hasFilters = search !== "" || status !== "all"
+   const showEmpty = !loading && !loadError && posts.length === 0 && !hasFilters
+
    return (
       <div className="flex flex-col gap-6">
          <div className="flex flex-wrap items-center justify-between gap-3">
@@ -130,12 +137,16 @@ function PostsTable() {
                   <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
                </p>
             </div>
-            <Button asChild>
-               <Link href="/dashboard/posts/new">
-                  <PlusIcon data-icon="inline-start" />
-                  Nuevo post
-               </Link>
-            </Button>
+            {loading ? (
+               <Skeleton aria-hidden className="h-8 w-28 rounded-lg" />
+            ) : showEmpty ? null : (
+               <Button asChild>
+                  <Link href="/dashboard/posts/new">
+                     <PlusIcon data-icon="inline-start" />
+                     Nuevo post
+                  </Link>
+               </Button>
+            )}
          </div>
 
          <div className="flex flex-wrap items-center gap-3">
@@ -184,18 +195,20 @@ function PostsTable() {
          {loadError ? (
             <LoadError title="No se pudieron cargar los posts" onRetry={load} />
          ) : posts.length === 0 ? (
-            <StackedCardsEmpty
-               className="min-h-[40vh]"
-               title="No hay posts"
-               description="Crea tu primer post para empezar a publicar contenido."
-            >
-               <Button asChild>
-                  <Link href="/dashboard/posts/new">
-                     <PlusIcon data-icon="inline-start" />
-                     Nuevo post
-                  </Link>
-               </Button>
-            </StackedCardsEmpty>
+            hasFilters ? (
+               <EmptySearch
+                  entity="posts"
+                  query={search}
+                  clearLabel="Limpiar filtros"
+                  onClear={() => {
+                     setPage(1)
+                     setSearch("")
+                     setStatus("all")
+                  }}
+               />
+            ) : (
+               <EmptyPosts />
+            )
          ) : (
             <div className="overflow-hidden rounded-xl border border-border">
                <Table>

@@ -2,7 +2,8 @@ import { listPostsPublic } from "@/lib/api/posts"
 import { PostCard } from "@/components/posts/post-card"
 import { PostSearch } from "@/components/posts/post-search"
 import { PostPagination } from "@/components/posts/post-pagination"
-import { Pattern as StackedCardsEmpty } from "@/components/examples/c-empty-15"
+import { EmptyPosts } from "@/components/empty/empty-posts"
+import { EmptySearch } from "@/components/empty/empty-search"
 
 interface HomeSearchParams {
   page?: string
@@ -59,15 +60,11 @@ export default async function HomePage({
       ) : null}
 
       {posts.length === 0 ? (
-        <StackedCardsEmpty
-          className="min-h-[40vh]"
-          title="No hay posts todavía"
-          description={
-            sp.search || sp.tag || sp.category
-              ? "Prueba con otros términos de búsqueda."
-              : "Vuelve pronto, estamos preparando contenido nuevo."
-          }
-        />
+        sp.search || sp.tag || sp.category ? (
+          <EmptySearch entity="posts" query={sp.search} clearHref="/" />
+        ) : (
+          <EmptyPosts variant="public" />
+        )
       ) : (
         <>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
