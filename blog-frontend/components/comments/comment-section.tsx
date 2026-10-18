@@ -332,9 +332,9 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar comentario?"
-        description="El comentario se eliminará de forma permanente. Esta acción no se puede deshacer."
-        deleting={deleting}
+        itemType="comentario"
+        description="El comentario dejará de mostrarse en el post. No se puede deshacer."
+        isPending={deleting}
         onConfirm={handleDelete}
       />
     </section>

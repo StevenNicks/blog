@@ -216,9 +216,10 @@ function ImagesLibrary() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar esta imagen?"
-        description="No podrás eliminarla si está siendo usada como portada o dentro del contenido de algún post."
-        deleting={deleting}
+        itemName={deleteTarget?.originalName}
+        itemType="imagen"
+        description="Se borrará de la biblioteca y no se puede deshacer. Si está en uso como portada o dentro de un post, no podrá eliminarse."
+        isPending={deleting}
         onConfirm={handleDelete}
       />
     </div>

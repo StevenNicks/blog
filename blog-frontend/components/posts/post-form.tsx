@@ -126,9 +126,10 @@ export function PostForm({ mode, initialPost }: PostFormProps) {
                   Eliminar
                 </Button>
               }
-              title="¿Eliminar este post?"
-              description="El post se eliminará de forma permanente. Esta acción no se puede deshacer."
-              deleting={deleting}
+              itemName={initialPost?.title}
+              itemType="post"
+              description="Se perderán el contenido, la portada y los comentarios de este post. No se puede deshacer."
+              isPending={deleting}
               onConfirm={handleDelete}
             />
           ) : null}

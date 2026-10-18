@@ -186,9 +186,10 @@ function RolesGrid() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`¿Eliminar el rol "${deleteTarget?.name}"?`}
-        description="No podrás eliminarlo si algún usuario lo tiene asignado actualmente."
-        deleting={deleting}
+        itemName={deleteTarget?.name}
+        itemType="rol"
+        description="Se borrará el rol y sus permisos. No se puede deshacer. Si algún usuario lo tiene asignado, no podrá eliminarse."
+        isPending={deleting}
         onConfirm={handleDelete}
       />
     </div>

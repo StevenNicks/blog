@@ -294,9 +294,10 @@ function UsersTable() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`¿Eliminar a "${deleteTarget?.name}"?`}
-        description="Se eliminará la cuenta de forma permanente. Esta acción no se puede deshacer."
-        deleting={deleting}
+        itemName={deleteTarget?.name}
+        itemType="usuario"
+        description="Se eliminará su cuenta y perderá el acceso al panel. No se puede deshacer."
+        isPending={deleting}
         onConfirm={handleDelete}
       />
     </div>

@@ -297,9 +297,10 @@ function PostsTable() {
          <ConfirmDeleteDialog
            open={!!deleteTarget}
            onOpenChange={(open) => !open && setDeleteTarget(null)}
-           title={`¿Eliminar "${deleteTarget?.title}"?`}
-           description="El post se eliminará de forma permanente. Esta acción no se puede deshacer."
-           deleting={deleting}
+           itemName={deleteTarget?.title}
+           itemType="post"
+           description="Se perderán el contenido, la portada y los comentarios de este post. No se puede deshacer."
+           isPending={deleting}
            onConfirm={handleDelete}
          />
       </div>
