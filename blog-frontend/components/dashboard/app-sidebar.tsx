@@ -18,6 +18,7 @@ import {
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { Logo } from "@/components/logo"
+import { Button } from "@/components/ui/button"
 import { NavMain, type NavMainItem } from "@/components/dashboard/nav-main"
 import { COMMENTS_CHANGED_EVENT, listAllComments } from "@/lib/api/comments"
 import { NavUser } from "@/components/dashboard/nav-user"
@@ -31,7 +32,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface NavConfigItem {
   title: string
@@ -69,6 +72,7 @@ const admin: NavConfigItem[] = [
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { hasPermission, fetcherPaged } = useAuth()
+  const { state: sidebarState, isMobile } = useSidebar()
   const canModerate = hasPermission("comments:moderate")
   const [pendingComments, setPendingComments] = React.useState(0)
 
@@ -121,9 +125,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Blog">
               <Link href="/dashboard">
-                {/* size-6! anula el [&_svg]:size-4 que el botón aplica a sus iconos; con la barra
-                    contraída el botón mide 32px sin padding, ml-1 centra el logo de 24px */}
-                <Logo className="size-6! group-data-[collapsible=icon]:ml-1" />
+                {/* size-6! anula el [&_svg]:size-4 que el botón aplica a sus iconos. -mx-1 centra el logo
+                    de 24px en el eje de los iconos de 16px; contraído el botón mide 32px sin padding y ml-1 lo centra */}
+                <Logo className="-mx-1 size-6! group-data-[collapsible=icon]:ml-1" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-heading font-semibold">Blog</span>
                   <span className="truncate text-xs text-muted-foreground">Panel de administración</span>
@@ -132,30 +136,29 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        {/* El tooltip solo se muestra con la barra contraída (misma lógica que SidebarMenuButton) */}
         {hasPermission("posts:create") && (
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
                 asChild
-                tooltip="Nuevo post"
-                // h-6 iguala la altura del logo. Mismo ritmo que el ancho del sidebar (200ms lineal) y se anima
-                // también el margen, para que el botón se encoja sin saltos; contraído mide 24px con ml-1 (como el logo)
-                className="h-6 justify-center bg-primary py-0 text-primary-foreground transition-[width,height,padding,margin] duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground motion-reduce:transition-none group-data-[collapsible=icon]:ml-1 group-data-[collapsible=icon]:size-6! group-data-[collapsible=icon]:p-1!">
+                className="w-full gap-2 px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-0"
+              >
                 <Link href="/dashboard/posts/new">
                   <PlusIcon />
-                  {/* El texto se pliega (ancho + opacidad) en vez de cortarse; -ml-2 anula el gap para que el icono quede centrado */}
-                  <span className="max-w-20 whitespace-nowrap transition-[max-width,margin,opacity] [transition-duration:200ms,200ms,100ms] [transition-delay:0ms,0ms,100ms] ease-linear group-data-[collapsible=icon]:[transition-delay:0ms] group-data-[collapsible=icon]:-ml-2 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
-                    Nuevo post
-                  </span>
+                  <span className="group-data-[collapsible=icon]:hidden">Nuevo post</span>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center" hidden={sidebarState !== "collapsed" || isMobile}>
+              Nuevo post
+            </TooltipContent>
+          </Tooltip>
         )}
       </SidebarHeader>
       <SidebarContent>
         <NavMain label="Contenido" items={contentItems} />
-        {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator className="mx-0" />}
+        {contentItems.length > 0 && adminItems.length > 0 && <SidebarSeparator />}
         <NavMain label="Administración" items={adminItems} />
       </SidebarContent>
       <SidebarFooter>
@@ -169,7 +172,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SidebarSeparator className="mx-0" />
+        <SidebarSeparator />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

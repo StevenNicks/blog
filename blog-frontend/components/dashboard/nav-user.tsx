@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronsUpDownIcon, GlobeIcon, LogOutIcon, UserIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { UserAvatar } from "@/components/user-avatar"
@@ -27,9 +27,11 @@ export function NavUser() {
 
   if (!user) return null
 
-  const identity = (
+  // En el botón del sidebar, -mx-1 centra el avatar de 24px en el eje de los iconos de 16px; contraído el
+  // botón mide 32px sin padding y ml-1 lo centra
+  const identity = (avatarClassName?: string) => (
     <>
-      <UserAvatar name={user.name} avatar={user.avatar} size="sm" />
+      <UserAvatar name={user.name} avatar={user.avatar} size="sm" className={avatarClassName} />
       <div className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-medium">{user.name}</span>
         <span className="truncate text-xs text-muted-foreground">
@@ -49,7 +51,7 @@ export function NavUser() {
               tooltip={user.name}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {identity}
+              {identity("-mx-1 group-data-[collapsible=icon]:ml-1")}
               <ChevronsUpDownIcon className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -60,7 +62,7 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5">{identity}</div>
+              <div className="flex items-center gap-2 px-1 py-1.5">{identity()}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -68,12 +70,6 @@ export function NavUser() {
                 <Link href="/dashboard/profile">
                   <UserIcon />
                   Mi perfil
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/">
-                  <GlobeIcon />
-                  Ver blog
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
