@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 function PostCardSkeleton() {
   return (
     <Card className="overflow-hidden py-0">
-      <Skeleton className="aspect-16/9 rounded-none" />
+      <Skeleton className="aspect-1200/630 rounded-none" />
       <CardHeader className="pt-5">
         <div className="flex items-center gap-1.5">
           <Skeleton className="h-5 w-16 rounded-full" />

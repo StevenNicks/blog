@@ -12,7 +12,7 @@ export function PostCard({ post, priority = false }: { post: Post; priority?: bo
   return (
     <Card className="group overflow-hidden py-0 transition-shadow hover:shadow-md">
       <Link href={`/posts/${post.slug}`} className="block">
-        <div className="relative aspect-16/9 overflow-hidden bg-muted">
+        <div className="relative aspect-1200/630 overflow-hidden bg-muted">
           {post.coverImage ? (
             <Image
               src={post.coverImage.url}

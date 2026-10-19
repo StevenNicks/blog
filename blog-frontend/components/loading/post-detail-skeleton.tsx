@@ -25,7 +25,7 @@ export function PostDetailSkeleton() {
           <Skeleton className="ml-auto h-4 w-24" />
         </div>
 
-        <Skeleton className="mt-8 aspect-16/9 rounded-xl" />
+        <Skeleton className="mt-8 aspect-1200/630 rounded-xl" />
 
         <div className="mt-8 flex flex-col gap-3">
           <Skeleton className="h-4 w-full" />

@@ -73,7 +73,7 @@ export default async function PostPage({ params }: PostPageProps) {
       </div>
 
       {post.coverImage ? (
-        <div className="relative mt-8 aspect-16/9 overflow-hidden rounded-xl border border-border bg-muted">
+        <div className="relative mt-8 aspect-1200/630 overflow-hidden rounded-xl border border-border bg-muted">
           <Image
             src={post.coverImage.url}
             alt={post.coverImage.alt || post.title}
@@ -85,7 +85,7 @@ export default async function PostPage({ params }: PostPageProps) {
           />
         </div>
       ) : (
-        <div className="mt-8 flex aspect-16/9 items-center justify-center rounded-xl border border-dashed border-border bg-muted text-muted-foreground">
+        <div className="mt-8 flex aspect-1200/630 items-center justify-center rounded-xl border border-dashed border-border bg-muted text-muted-foreground">
           <ImageIcon className="size-10" />
         </div>
       )}

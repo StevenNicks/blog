@@ -33,7 +33,7 @@ export function PostFormSkeleton() {
           <FieldSkeleton />
           <FieldSkeleton />
           <FieldSkeleton />
-          <FieldSkeleton inputClass="aspect-video h-auto" />
+          <FieldSkeleton inputClass="aspect-1200/630 h-auto" />
         </div>
       </div>
     </div>
