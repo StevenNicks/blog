@@ -34,6 +34,8 @@ export interface NavMainItem {
   badge?: number
   /** Si tiene sub-elementos, el ítem se muestra como grupo desplegable. */
   items?: { title: string; url: string; isActive?: boolean }[]
+  /** Los sub-ítems se muestran siempre, sin desplegable. */
+  alwaysOpen?: boolean
 }
 
 // Barra de acento a la izquierda + icono en color primario para el ítem activo
@@ -58,6 +60,22 @@ function ItemBadge({ count }: { count?: number }) {
       {/* Con la barra contraída el contador se oculta: punto indicador */}
       <span className="pointer-events-none absolute top-1.5 right-1.5 hidden size-2 rounded-full bg-primary ring-2 ring-sidebar group-data-[collapsible=icon]:block" />
     </>
+  )
+}
+
+function SubItems({ items }: { items: NonNullable<NavMainItem["items"]> }) {
+  return (
+    <SidebarMenuSub className="mt-1 py-0">
+      {items.map((subItem) => (
+        <SidebarMenuSubItem key={subItem.url}>
+          <SidebarMenuSubButton asChild isActive={subItem.isActive} className={subActiveStyles}>
+            <Link href={subItem.url}>
+              <span>{subItem.title}</span>
+            </Link>
+          </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+      ))}
+    </SidebarMenuSub>
   )
 }
 
@@ -94,6 +112,16 @@ export function NavMain({ label, items }: { label: string; items: NavMainItem[] 
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>
+          ) : item.items?.length && item.alwaysOpen ? (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive} className={activeStyles}>
+                <Link href={item.url}>
+                  <item.icon />
+                  <span className={fold}>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+              <SubItems items={item.items} />
+            </SidebarMenuItem>
           ) : item.items?.length ? (
             <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
               <SidebarMenuItem>
@@ -105,17 +133,7 @@ export function NavMain({ label, items }: { label: string; items: NavMainItem[] 
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub className="mt-1 py-0">
-                    {item.items.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.url}>
-                        <SidebarMenuSubButton asChild isActive={subItem.isActive} className={subActiveStyles}>
-                          <Link href={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
+                  <SubItems items={item.items} />
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>

@@ -43,6 +43,8 @@ interface NavConfigItem {
   permission?: string
   /** Solo marca activa la ruta exacta (no sus subrutas). */
   exact?: boolean
+  /** El grupo de sub-ítems se muestra siempre desplegado (sin opción de colapsarlo). */
+  alwaysOpen?: boolean
   items?: { title: string; url: string; permission?: string }[]
 }
 
@@ -53,6 +55,7 @@ const content: NavConfigItem[] = [
     url: "/dashboard/posts",
     icon: FileTextIcon,
     permission: "posts:create",
+    alwaysOpen: true,
     items: [
       { title: "Todos los posts", url: "/dashboard/posts" },
       { title: "Nuevo post", url: "/dashboard/posts/new" },
@@ -115,6 +118,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             icon: item.icon,
             isActive: item.exact ? pathname === item.url : pathname.startsWith(item.url),
             items: subItems,
+            alwaysOpen: item.alwaysOpen,
             badge: item.url === "/dashboard/comments" ? pendingComments : undefined,
           }
         }),
