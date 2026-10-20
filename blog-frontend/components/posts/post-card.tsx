@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ImageIcon } from "lucide-react"
+import { EyeIcon, ImageIcon } from "lucide-react"
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -51,14 +51,23 @@ export function PostCard({ post, priority = false }: { post: Post; priority?: bo
         <p className="line-clamp-2 text-sm text-muted-foreground">{post.excerpt}</p>
       </CardContent>
 
-      <CardFooter className="flex items-center justify-between border-t py-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
+      <CardFooter className="flex items-center justify-between gap-3 border-t py-4 text-sm text-muted-foreground">
+        {/* min-w-0 deja que el nombre se recorte; los datos de la derecha nunca se parten */}
+        <div className="flex min-w-0 items-center gap-2">
           <UserAvatar name={post.author?.name ?? "Usuario eliminado"} avatar={post.author?.avatar} size="sm" />
           <span className="truncate font-medium text-foreground">{post.author?.name ?? "Usuario eliminado"}</span>
         </div>
-        <div className="flex flex-col items-end text-xs">
+        <div className="flex shrink-0 flex-col items-end text-xs whitespace-nowrap">
           <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
-          <span>{readingTime(post.content)}</span>
+          <span className="flex items-center gap-1.5">
+            {readingTime(post.content)}
+            <span aria-hidden>·</span>
+            <span className="flex items-center gap-1" title={`${post.views} vistas`}>
+              <EyeIcon aria-hidden className="size-3.5" />
+              {post.views}
+              <span className="sr-only">vistas</span>
+            </span>
+          </span>
         </div>
       </CardFooter>
     </Card>
