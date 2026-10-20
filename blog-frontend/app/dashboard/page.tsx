@@ -100,8 +100,8 @@ export default function DashboardHomePage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Hola, {user?.name.split(" ")[0]} 👋</h1>
-          <p className="text-sm text-muted-foreground">Este es el resumen de tu blog.</p>
+          <h1 className="font-heading text-4xl font-semibold tracking-tight">Hola, {user?.name.split(" ")[0]}</h1>
+          <p className="text-md text-muted-foreground">Este es el resumen de tu blog.</p>
         </div>
         {canWrite ? (
           <Button asChild>
