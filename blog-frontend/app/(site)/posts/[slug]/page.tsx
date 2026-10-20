@@ -7,6 +7,7 @@ import { getPostPublic } from "@/lib/api/posts"
 import { listCommentsPublic } from "@/lib/api/comments"
 import { ApiError } from "@/lib/api/client"
 import { CommentSection } from "@/components/comments/comment-section"
+import { PostEditButton } from "@/components/posts/post-edit-button"
 import { UserAvatar } from "@/components/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { formatDate, readingTime } from "@/lib/format"
@@ -55,21 +56,27 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <h1 className="font-heading text-3xl font-bold tracking-tight text-balance sm:text-4xl">{post.title}</h1>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4 border-y border-border py-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <UserAvatar name={post.author?.name ?? "Usuario eliminado"} avatar={post.author?.avatar} />
-          <div className="flex flex-col leading-tight">
-            <span className="font-medium text-foreground">{post.author?.name ?? "Usuario eliminado"}</span>
-            <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
+      <div className="mt-6 flex items-center gap-3 border-y border-border py-4 text-sm text-muted-foreground">
+        <UserAvatar name={post.author?.name ?? "Usuario eliminado"} avatar={post.author?.avatar} size="lg" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate font-medium text-foreground">{post.author?.name ?? "Usuario eliminado"}</span>
+          {/* En movil la fecha ocupa su propia linea para no dejar un separador colgando al envolver */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <time dateTime={post.publishedAt ?? post.createdAt} className="max-sm:w-full">
+              {formatDate(post.publishedAt ?? post.createdAt)}
+            </time>
+            <span aria-hidden className="max-sm:hidden">
+              ·
+            </span>
+            <span>{readingTime(post.content)}</span>
+            <span aria-hidden>·</span>
+            <span className="flex items-center gap-1">
+              <EyeIcon className="size-3.5" />
+              {post.views} vistas
+            </span>
           </div>
         </div>
-        <span aria-hidden>·</span>
-        <span>{readingTime(post.content)}</span>
-        <span aria-hidden>·</span>
-        <span className="flex items-center gap-1">
-          <EyeIcon className="size-4" />
-          {post.views} vistas
-        </span>
+        <PostEditButton slug={post.slug} authorId={post.author?._id} />
       </div>
 
       {post.coverImage ? (
