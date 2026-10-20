@@ -37,16 +37,17 @@ export function SiteHeader() {
           Blog
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground sm:flex">
-          <Link href="/" className="transition-colors hover:text-foreground">
-            Inicio
-          </Link>
-          {status === "authenticated" ? (
+        {/* Solo con sesión: sin ella "Inicio" quedaría solo y repetiría lo que ya hace el logo */}
+        {status === "authenticated" ? (
+          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground sm:flex">
+            <Link href="/" className="transition-colors hover:text-foreground">
+              Inicio
+            </Link>
             <Link href="/dashboard" className="transition-colors hover:text-foreground">
               Panel
             </Link>
-          ) : null}
-        </nav>
+          </nav>
+        ) : null}
 
         {/* Todos los controles miden 24px (1.5rem) de alto y son redondos.
             Los tooltips solo se muestran en escritorio (max-sm:hidden): en móvil no hay hover */}
