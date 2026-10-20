@@ -134,7 +134,7 @@
 
 @layer components {
   .prose-content {
-    @apply prose prose-neutral max-w-none font-sans prose-headings:font-heading prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:border prose-img:border-border;
+    @apply prose prose-neutral max-w-none font-sans prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:border prose-img:border-border;
     /* Los tokens semanticos se declaran despues del @apply para ganar la cascada sobre los grises por defecto de prose-neutral */
     --tw-prose-body: var(--foreground);
     --tw-prose-headings: var(--foreground);
@@ -152,5 +152,11 @@
     --tw-prose-pre-bg: var(--secondary);
     --tw-prose-th-borders: var(--border);
     --tw-prose-td-borders: var(--border);
+  }
+
+  /* La fuente de los titulos va aparte: con prose-headings:font-heading dentro del @apply, Tailwind
+     copiaba en los h1-h6 los colores fijos de prose-neutral y los titulos no cambiaban en modo oscuro */
+  .prose-content :where(h1, h2, h3, h4, h5, h6) {
+    @apply font-heading;
   }
 }
