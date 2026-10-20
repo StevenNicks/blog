@@ -5,6 +5,11 @@ const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { sanitizeRichContent, stripToExcerpt } = require('../utils/sanitize');
 const PERM = require('../constants/permissions');
+const parseSort = require('../utils/parseSort');
+const runBulk = require('../utils/bulkResult');
+
+// Columnas por las que la tabla del dashboard puede ordenar (?sort=campo o ?sort=-campo)
+const POST_SORT_FIELDS = ['title', 'status', 'category', 'views', 'createdAt'];
 
 const buildUniqueSlug = async (title) => {
   const base = slugify(title, { lower: true, strict: true });
@@ -47,7 +52,10 @@ const getPosts = catchAsync(async (req, res) => {
       .populate('coverImage')
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort(req.query.search ? { score: { $meta: 'textScore' } } : '-createdAt'),
+      .sort(
+        parseSort(req.query.sort, POST_SORT_FIELDS) ??
+          (req.query.search ? { score: { $meta: 'textScore' } } : '-createdAt')
+      ),
     Post.countDocuments(filter),
   ]);
 
@@ -165,4 +173,37 @@ const deletePost = catchAsync(async (req, res) => {
   res.json({ success: true, data: null });
 });
 
-module.exports = { getPosts, getPostBySlug, createPost, updatePost, deletePost };
+// Acciones en lote: cada post pasa por las mismas reglas de permisos que su endpoint individual.
+// Responde 200 aunque algunos fallen; el detalle va en data.failed.
+const bulkDeletePosts = catchAsync(async (req, res) => {
+  const result = await runBulk(req.body.ids, async (id) => {
+    const post = await getPostOr404(id);
+    assertCanDelete(req, post);
+    await Comment.deleteMany({ post: post._id });
+    await post.deleteOne();
+  });
+  res.json({ success: true, data: result });
+});
+
+const bulkUpdatePostStatus = catchAsync(async (req, res) => {
+  const { status } = req.body;
+  const result = await runBulk(req.body.ids, async (id) => {
+    const post = await getPostOr404(id);
+    assertCanEdit(req, post);
+    if (post.status === status) return;
+    post.status = status;
+    if (status === 'published' && !post.publishedAt) post.publishedAt = new Date();
+    await post.save();
+  });
+  res.json({ success: true, data: result });
+});
+
+module.exports = {
+  getPosts,
+  getPostBySlug,
+  createPost,
+  updatePost,
+  deletePost,
+  bulkDeletePosts,
+  bulkUpdatePostStatus,
+};

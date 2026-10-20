@@ -75,6 +75,12 @@ export interface Comment {
   updatedAt: string
 }
 
+/** Respuesta de las acciones en lote: los ids que se aplicaron y los que fallaron con su motivo. */
+export interface BulkResult {
+  succeeded: string[]
+  failed: { id: string; message: string }[]
+}
+
 export interface Meta {
   page: number
   limit: number

@@ -2,33 +2,33 @@
 
 import * as React from "react"
 import { toast } from "sonner"
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import { SearchIcon, Trash2Icon, UserCheckIcon, UserXIcon } from "lucide-react"
 
 import { RequireAuth } from "@/components/require-auth"
 import { useAuth } from "@/components/providers/auth-provider"
-import { UserAvatar } from "@/components/user-avatar"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { LoadError } from "@/components/loading/load-error"
 import { LoadingGate } from "@/components/loading/loading-gate"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { EmptySearch } from "@/components/empty/empty-search"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog"
-import { formatDate } from "@/lib/format"
+import { DataTable } from "@/components/data-table/data-table"
+import { DataTablePagination } from "@/components/data-table/data-table-pagination"
+import { DataTableSelectionBar } from "@/components/data-table/data-table-selection-bar"
+import { DataTableViewOptions } from "@/components/data-table/data-table-view-options"
+import { toastBulkResult } from "@/components/data-table/bulk-toast"
+import { useDataTable } from "@/components/data-table/use-data-table"
 import { ApiError } from "@/lib/api/client"
 import * as usersApi from "@/lib/api/users"
 import * as rolesApi from "@/lib/api/roles"
 import type { Role, User } from "@/lib/types"
+
+import { getUserColumns } from "./columns"
+
+type DeleteTarget = { kind: "single"; user: User } | { kind: "bulk"; ids: string[] }
 
 function UsersTable() {
   const { fetcher, fetcherPaged, user: currentUser } = useAuth()
@@ -39,48 +39,22 @@ function UsersTable() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [loadError, setLoadError] = React.useState(false)
   const [search, setSearch] = React.useState("")
-  const [page, setPage] = React.useState(1)
-  const [pages, setPages] = React.useState(1)
+  // Id del rol o "all"; la API filtra con ?role=<id>
+  const [roleFilter, setRoleFilter] = React.useState("all")
   const [total, setTotal] = React.useState<number | null>(null)
-  const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null)
+  const [deleteTarget, setDeleteTarget] = React.useState<DeleteTarget | null>(null)
   const [deleting, setDeleting] = React.useState(false)
+  const [bulkUpdating, setBulkUpdating] = React.useState<"activate" | "deactivate" | null>(null)
   const [pendingIds, setPendingIds] = React.useState<Set<string>>(new Set())
   const loadedRef = React.useRef(false)
   const requestRef = React.useRef(0)
 
-  const load = React.useCallback(async () => {
-    const requestId = ++requestRef.current
-    if (loadedRef.current) setRefreshing(true)
-    else {
-      setLoading(true)
-      setLoadError(false)
-    }
-    try {
-      const [{ data, meta }, roleList] = await Promise.all([
-        usersApi.listUsers(fetcherPaged, { page, limit: 15, search: search || undefined }),
-        rolesApi.listRoles(fetcher),
-      ])
-      if (requestId !== requestRef.current) return
-      setUsers(data)
-      setRoles(roleList)
-      setPages(meta?.pages ?? 1)
-      setTotal(meta?.total ?? data.length)
-      loadedRef.current = true
-    } catch (err) {
-      if (requestId !== requestRef.current) return
-      toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los usuarios")
-      if (!loadedRef.current) setLoadError(true)
-    } finally {
-      if (requestId === requestRef.current) {
-        setLoading(false)
-        setRefreshing(false)
-      }
-    }
-  }, [fetcherPaged, fetcher, page, search])
-
-  React.useEffect(() => {
-    load()
-  }, [load])
+  const isAdmin = currentUser?.role.name === "admin"
+  // No puedes gestionarte a ti mismo; solo un admin gestiona a otros admins (la API protege al propietario)
+  const isLocked = React.useCallback(
+    (user: User) => user._id === currentUser?._id || (user.role.name === "admin" && !isAdmin),
+    [currentUser?._id, isAdmin]
+  )
 
   function setPending(id: string, on: boolean) {
     setPendingIds((prev) => {
@@ -117,18 +91,109 @@ function UsersTable() {
     }
   }
 
+  // Las columnas leen funciones que cambian con cada render (pendientes, handlers): se recrean entonces
+  const columns = getUserColumns({
+    roles,
+    canAssignAdmin: isAdmin,
+    isLocked,
+    isPending: (user) => pendingIds.has(user._id),
+    onRoleChange: handleRoleChange,
+    onActiveChange: handleActiveChange,
+    onDelete: (user) => setDeleteTarget({ kind: "single", user }),
+  })
+
+  const { table, pagination, sortParam, selectedIds, resetPage, clearSelection } = useDataTable({
+    data: users,
+    columns,
+    rowCount: total ?? 0,
+    getRowId: (user) => user._id,
+    // Las filas bloqueadas (tu cuenta, otros admins) no se pueden seleccionar para acciones en lote
+    enableRowSelection: (row) => !isLocked(row.original),
+    storageKey: "dashboard:users:columns",
+  })
+
+  const load = React.useCallback(async () => {
+    const requestId = ++requestRef.current
+    if (loadedRef.current) setRefreshing(true)
+    else {
+      setLoading(true)
+      setLoadError(false)
+    }
+    try {
+      const [{ data, meta }, roleList] = await Promise.all([
+        usersApi.listUsers(fetcherPaged, {
+          page: pagination.pageIndex + 1,
+          limit: pagination.pageSize,
+          sort: sortParam,
+          search: search || undefined,
+          role: roleFilter === "all" ? undefined : roleFilter,
+        }),
+        rolesApi.listRoles(fetcher),
+      ])
+      if (requestId !== requestRef.current) return
+      // Si se borró la última fila de la última página, se retrocede a la que ahora es la última
+      if (meta && meta.pages > 0 && pagination.pageIndex + 1 > meta.pages) {
+        table.setPageIndex(meta.pages - 1)
+        return
+      }
+      setUsers(data)
+      setRoles(roleList)
+      setTotal(meta?.total ?? data.length)
+      loadedRef.current = true
+    } catch (err) {
+      if (requestId !== requestRef.current) return
+      toast.error(err instanceof ApiError ? err.message : "No se pudieron cargar los usuarios")
+      if (!loadedRef.current) setLoadError(true)
+    } finally {
+      if (requestId === requestRef.current) {
+        setLoading(false)
+        setRefreshing(false)
+      }
+    }
+    // table es estable entre renders; no se incluye para no recrear load en cada render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcherPaged, fetcher, pagination.pageIndex, pagination.pageSize, sortParam, search, roleFilter])
+
+  React.useEffect(() => {
+    load()
+  }, [load])
+
   async function handleDelete() {
     if (!deleteTarget || deleting) return
     setDeleting(true)
     try {
-      await usersApi.deleteUser(fetcher, deleteTarget._id)
-      toast.success("Usuario eliminado")
+      if (deleteTarget.kind === "single") {
+        await usersApi.deleteUser(fetcher, deleteTarget.user._id)
+        toast.success("Usuario eliminado")
+      } else {
+        const result = await usersApi.bulkDeleteUsers(fetcher, deleteTarget.ids)
+        toastBulkResult(result, (n) => `${n} usuario${n === 1 ? "" : "s"} eliminado${n === 1 ? "" : "s"}`)
+      }
       setDeleteTarget(null)
+      clearSelection()
       load()
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar el usuario")
+      toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar")
     } finally {
       setDeleting(false)
+    }
+  }
+
+  async function handleBulkActive(isActive: boolean) {
+    if (bulkUpdating) return
+    setBulkUpdating(isActive ? "activate" : "deactivate")
+    try {
+      const result = await usersApi.bulkSetUsersActive(fetcher, selectedIds, isActive)
+      toastBulkResult(
+        result,
+        (n) => `${n} usuario${n === 1 ? "" : "s"} ${isActive ? "activado" : "desactivado"}${n === 1 ? "" : "s"}`
+      )
+      clearSelection()
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "No se pudieron actualizar los usuarios")
+    } finally {
+      setBulkUpdating(null)
     }
   }
 
@@ -140,26 +205,76 @@ function UsersTable() {
           {total === null ? (
             <span aria-hidden className="inline-block h-5 w-32" />
           ) : (
-            <span>{total} usuario{total === 1 ? "" : "s"} registrados</span>
+            <span>
+              {total} usuario{total === 1 ? "" : "s"} registrados
+            </span>
           )}
           {/* Ancho reservado para que el texto no salte al aparecer el spinner */}
           <span className="flex size-4 items-center justify-center">{refreshing ? <Spinner /> : null}</span>
         </p>
       </div>
 
-      <InputGroup className="max-w-xs">
-        <InputGroupInput
-          placeholder="Buscar por nombre o email…"
-          value={search}
-          onChange={(e) => {
-            setPage(1)
-            setSearch(e.target.value)
+      {/* Móvil: buscador a todo el ancho; debajo, rol (estirado) y el ícono de columnas */}
+      <div className="flex flex-wrap items-center gap-3">
+        <InputGroup className="w-full sm:max-w-xs">
+          <InputGroupInput
+            placeholder="Buscar por nombre o email…"
+            aria-label="Buscar usuarios"
+            value={search}
+            onChange={(e) => {
+              resetPage()
+              setSearch(e.target.value)
+            }}
+          />
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+        </InputGroup>
+        <Select
+          value={roleFilter}
+          onValueChange={(value) => {
+            resetPage()
+            setRoleFilter(value)
           }}
-        />
-        <InputGroupAddon>
-          <SearchIcon />
-        </InputGroupAddon>
-      </InputGroup>
+        >
+          <SelectTrigger className="flex-1 sm:w-48 sm:flex-none" aria-label="Filtrar por rol">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">Todos los roles</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role._id} value={role._id}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <div className="sm:ml-auto">
+          <DataTableViewOptions table={table} />
+        </div>
+      </div>
+
+      <DataTableSelectionBar count={selectedIds.length} onClear={clearSelection}>
+        <Button variant="outline" size="sm" disabled={!!bulkUpdating} onClick={() => handleBulkActive(true)}>
+          {bulkUpdating === "activate" ? <Spinner data-icon="inline-start" /> : <UserCheckIcon data-icon="inline-start" />}
+          Activar
+        </Button>
+        <Button variant="outline" size="sm" disabled={!!bulkUpdating} onClick={() => handleBulkActive(false)}>
+          {bulkUpdating === "deactivate" ? <Spinner data-icon="inline-start" /> : <UserXIcon data-icon="inline-start" />}
+          Desactivar
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={!!bulkUpdating}
+          onClick={() => setDeleteTarget({ kind: "bulk", ids: selectedIds })}
+        >
+          <Trash2Icon data-icon="inline-start" />
+          Eliminar
+        </Button>
+      </DataTableSelectionBar>
 
       <LoadingGate
         loading={loading}
@@ -172,131 +287,42 @@ function UsersTable() {
           </div>
         }
       >
-      {loadError ? (
-        <LoadError title="No se pudieron cargar los usuarios" onRetry={load} />
-      ) : users.length === 0 ? (
-        <EmptySearch
-          entity="usuarios"
-          query={search}
-          onClear={() => {
-            setPage(1)
-            setSearch("")
-          }}
-        />
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Activo</TableHead>
-                <TableHead>Registrado</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => {
-                // No puedes editarte a ti mismo; solo un admin gestiona a otros admins (la API protege al propietario)
-                const isPending = pendingIds.has(user._id)
-                const isLocked =
-                  user._id === currentUser?._id ||
-                  (user.role.name === "admin" && currentUser?.role.name !== "admin")
-                return (
-                  <TableRow key={user._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <UserAvatar name={user.name} avatar={user.avatar} size="sm" />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{user.name}</p>
-                          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2" aria-busy={isPending}>
-                      <Select
-                        value={user.role._id}
-                        onValueChange={(roleId) => handleRoleChange(user, roleId)}
-                        disabled={isLocked || isPending}
-                      >
-                        <SelectTrigger className="w-36">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {roles
-                              .filter((role) => role.name !== "admin" || currentUser?.role.name === "admin")
-                              .map((role) => (
-                                <SelectItem key={role._id} value={role._id}>
-                                  {role.name}
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      {/* Ancho fijo reservado para que la fila no salte al aparecer el spinner */}
-                      <span className="flex size-4 items-center justify-center">
-                        {isPending ? <Spinner /> : null}
-                      </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={user.isActive}
-                        disabled={isLocked || isPending}
-                        onCheckedChange={(checked) => handleActiveChange(user, checked)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(user.createdAt)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-sm" disabled={isLocked}>
-                            <MoreHorizontalIcon />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(user)}>
-                            <Trash2Icon data-icon="inline-start" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-      </LoadingGate>
-
-      {pages > 1 ? (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Página {page} de {pages}
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              <ChevronLeftIcon data-icon="inline-start" />
-              Anterior
-            </Button>
-            <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>
-              Siguiente
-              <ChevronRightIcon data-icon="inline-end" />
-            </Button>
+        {loadError ? (
+          <LoadError title="No se pudieron cargar los usuarios" onRetry={load} />
+        ) : users.length === 0 ? (
+          <EmptySearch
+            entity="usuarios"
+            query={search}
+            clearLabel={roleFilter !== "all" ? "Limpiar filtros" : undefined}
+            onClear={() => {
+              resetPage()
+              setSearch("")
+              setRoleFilter("all")
+            }}
+          />
+        ) : (
+          <div className="flex flex-col gap-4">
+            <DataTable table={table} />
+            <DataTablePagination table={table} />
           </div>
-        </div>
-      ) : null}
+        )}
+      </LoadingGate>
 
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        itemName={deleteTarget?.name}
         itemType="usuario"
-        description="Se eliminará su cuenta y perderá el acceso al panel. No se puede deshacer."
+        title={
+          deleteTarget?.kind === "bulk"
+            ? `¿Eliminar ${deleteTarget.ids.length} usuario${deleteTarget.ids.length === 1 ? "" : "s"}?`
+            : undefined
+        }
+        itemName={deleteTarget?.kind === "single" ? deleteTarget.user.name : undefined}
+        description={
+          deleteTarget?.kind === "bulk"
+            ? "Se eliminarán sus cuentas y sus comentarios, y perderán el acceso al panel. No se puede deshacer."
+            : "Se eliminará su cuenta y perderá el acceso al panel. No se puede deshacer."
+        }
         isPending={deleting}
         onConfirm={handleDelete}
       />

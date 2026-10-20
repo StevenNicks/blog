@@ -1,8 +1,15 @@
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const Comment = require('../models/Comment');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
+const parseSort = require('../utils/parseSort');
+const runBulk = require('../utils/bulkResult');
+
+// Columnas por las que la tabla del dashboard puede ordenar (?sort=campo o ?sort=-campo).
+// ?sort=role / ?sort=-role se resuelve aparte en findUsersSortedByRole.
+const USER_SORT_FIELDS = ['name', 'email', 'isActive', 'createdAt'];
 
 const ownerEmail = () => (process.env.SEED_ADMIN_EMAIL || 'admin@blog.com').toLowerCase();
 
@@ -20,12 +27,41 @@ const assertCanManage = async (req, id) => {
   return user;
 };
 
+// El rol es una referencia a otra colección: find().sort() no puede ordenar por su nombre.
+// Se ordena por la posición del rol en la lista de roles ordenada alfabéticamente, y la
+// agregación solo devuelve los ids de la página; los usuarios se cargan después con find()
+// para conservar populate, toJSON y select:false (la contraseña nunca sale de la base).
+const findUsersSortedByRole = async (filter, direction, skip, limit) => {
+  const roleIds = (await Role.find().sort('name').select('_id')).map((r) => r._id);
+
+  // En una agregación no hay cast automático: el id del filtro (ya validado) llega como string
+  const match = { ...filter };
+  if (match.role) match.role = new mongoose.Types.ObjectId(String(match.role));
+
+  const rows = await User.aggregate([
+    { $match: match },
+    { $addFields: { roleOrder: { $indexOfArray: [roleIds, '$role'] } } },
+    { $sort: { roleOrder: direction, _id: direction } },
+    { $skip: skip },
+    { $limit: limit },
+    { $project: { _id: 1 } },
+  ]);
+
+  const ids = rows.map((row) => row._id);
+  const docs = await User.find({ _id: { $in: ids } }).populate('role');
+  const byId = new Map(docs.map((doc) => [String(doc._id), doc]));
+  return ids.map((id) => byId.get(String(id))).filter(Boolean);
+};
+
 const getUsers = catchAsync(async (req, res) => {
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
 
   const filter = {};
-  if (req.query.role) filter.role = req.query.role;
+  if (req.query.role) {
+    if (!mongoose.isValidObjectId(req.query.role)) throw new ApiError(400, 'El rol del filtro no es válido.');
+    filter.role = req.query.role;
+  }
   if (req.query.search) {
     filter.$or = [
       { name: new RegExp(req.query.search, 'i') },
@@ -33,12 +69,17 @@ const getUsers = catchAsync(async (req, res) => {
     ];
   }
 
+  const skip = (page - 1) * limit;
+  const roleSort = req.query.sort === 'role' ? 1 : req.query.sort === '-role' ? -1 : 0;
+
   const [users, total] = await Promise.all([
-    User.find(filter)
-      .populate('role')
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort('-createdAt'),
+    roleSort
+      ? findUsersSortedByRole(filter, roleSort, skip, limit)
+      : User.find(filter)
+          .populate('role')
+          .skip(skip)
+          .limit(limit)
+          .sort(parseSort(req.query.sort, USER_SORT_FIELDS) ?? '-createdAt'),
     User.countDocuments(filter),
   ]);
 
@@ -106,4 +147,38 @@ const deleteUser = catchAsync(async (req, res) => {
   res.json({ success: true, data: null });
 });
 
-module.exports = { getUsers, getUser, updateUser, setUserActive, assignRole, deleteUser };
+// En lote, la propia cuenta queda fuera: "seleccionar todo" no debe poder dejarte sin acceso
+const assertNotSelf = (req, id) => {
+  if (req.user._id.equals(id)) throw new ApiError(403, 'No puedes aplicar esta acción a tu propia cuenta.');
+};
+
+const bulkDeleteUsers = catchAsync(async (req, res) => {
+  const result = await runBulk(req.body.ids, async (id) => {
+    assertNotSelf(req, id);
+    const user = await assertCanManage(req, id);
+    await Comment.deleteMany({ author: user._id });
+    await user.deleteOne();
+  });
+  res.json({ success: true, data: result });
+});
+
+const bulkSetUsersActive = catchAsync(async (req, res) => {
+  const { isActive } = req.body;
+  const result = await runBulk(req.body.ids, async (id) => {
+    assertNotSelf(req, id);
+    await assertCanManage(req, id);
+    await User.updateOne({ _id: id }, { isActive });
+  });
+  res.json({ success: true, data: result });
+});
+
+module.exports = {
+  getUsers,
+  getUser,
+  updateUser,
+  setUserActive,
+  assignRole,
+  deleteUser,
+  bulkDeleteUsers,
+  bulkSetUsersActive,
+};

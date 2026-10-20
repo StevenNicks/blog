@@ -1,5 +1,5 @@
 import { apiFetch, apiFetchPaged, type Fetcher, type FetcherPaged } from "@/lib/api/client"
-import type { Post, PostStatus } from "@/lib/types"
+import type { BulkResult, Post, PostStatus } from "@/lib/types"
 
 export interface ListPostsParams {
   page?: number
@@ -9,6 +9,8 @@ export interface ListPostsParams {
   category?: string
   tag?: string
   search?: string
+  /** Campo de orden; con "-" delante es descendente (p. ej. "-views"). */
+  sort?: string
   [key: string]: string | number | undefined
 }
 
@@ -49,4 +51,12 @@ export function updatePost(fetcher: Fetcher, id: string, input: Partial<PostInpu
 
 export function deletePost(fetcher: Fetcher, id: string) {
   return fetcher<null>(`/posts/${id}`, { method: "DELETE" })
+}
+
+export function bulkDeletePosts(fetcher: Fetcher, ids: string[]) {
+  return fetcher<BulkResult>("/posts/bulk/delete", { method: "POST", body: { ids } })
+}
+
+export function bulkUpdatePostStatus(fetcher: Fetcher, ids: string[], status: PostStatus) {
+  return fetcher<BulkResult>("/posts/bulk/status", { method: "PATCH", body: { ids, status } })
 }
