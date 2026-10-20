@@ -8,6 +8,8 @@ const commentSchema = new mongoose.Schema(
     // Permite hilos de respuestas
     parentComment: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
     status: { type: String, enum: ['pending', 'approved', 'spam'], default: 'approved' },
+    // Fecha de la ultima edicion del autor (updatedAt tambien cambia al moderar, por eso va aparte)
+    editedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

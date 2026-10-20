@@ -69,6 +69,8 @@ export interface Comment {
   content: string
   parentComment: string | null
   status: CommentStatus
+  // Ultima edicion del autor; null o ausente si nunca se edito
+  editedAt?: string | null
   createdAt: string
   updatedAt: string
 }

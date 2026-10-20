@@ -14,7 +14,8 @@ const getComments = catchAsync(async (req, res) => {
   const filter = { post: post._id };
   if (!canModerate(req.user)) filter.status = 'approved';
 
-  const comments = await Comment.find(filter).populate('author', 'name avatar').sort('createdAt');
+  // Los mas recientes primero (el post los muestra asi, tanto hilos como respuestas)
+  const comments = await Comment.find(filter).populate('author', 'name avatar').sort('-createdAt');
   res.json({ success: true, data: comments });
 });
 
@@ -82,7 +83,10 @@ const updateComment = catchAsync(async (req, res) => {
   }
 
   comment.content = req.body.content;
+  comment.editedAt = new Date();
   await comment.save();
+  // El frontend reemplaza el comentario en su lista: necesita el autor completo, no solo el id
+  await comment.populate('author', 'name avatar');
   res.json({ success: true, data: comment });
 });
 
@@ -110,6 +114,7 @@ const moderateComment = catchAsync(async (req, res) => {
   }
   comment.status = req.body.status;
   await comment.save();
+  await comment.populate('author', 'name avatar');
   res.json({ success: true, data: comment });
 });
 

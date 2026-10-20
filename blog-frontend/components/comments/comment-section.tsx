@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { CheckIcon, MessageSquareIcon, MoreVerticalIcon, ReplyIcon, ShieldIcon, Trash2Icon } from "lucide-react"
+import { CheckIcon, MessageSquareIcon, MoreVerticalIcon, PencilIcon, ReplyIcon, ShieldIcon, Trash2Icon } from "lucide-react"
 
 import { useAuth } from "@/components/providers/auth-provider"
 import { UserAvatar } from "@/components/user-avatar"
@@ -35,11 +35,14 @@ interface CommentNode extends Comment {
   replies: Comment[]
 }
 
+// Los mas recientes primero, tanto los hilos como sus respuestas. Se ordena aqui (y no solo en el
+// backend) para que un comentario recien publicado quede arriba sin recargar
 function groupComments(comments: Comment[]): CommentNode[] {
-  const topLevel = comments.filter((c) => !c.parentComment)
+  const sorted = [...comments].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const topLevel = sorted.filter((c) => !c.parentComment)
   return topLevel.map((c) => ({
     ...c,
-    replies: comments.filter((r) => r.parentComment === c._id),
+    replies: sorted.filter((r) => r.parentComment === c._id),
   }))
 }
 
@@ -49,6 +52,11 @@ interface CommentRowProps {
   currentUserId?: string
   isAuthenticated: boolean
   canModerate: boolean
+  /** El usuario tiene permiso para editar sus propios comentarios. */
+  canEditOwn: boolean
+  isEditing: boolean
+  editText: string
+  savingEdit: boolean
   isReplying: boolean
   replyText: string
   submitting: boolean
@@ -60,6 +68,10 @@ interface CommentRowProps {
   onSubmitReply: () => void
   onModerate: (id: string, status: "approved" | "spam") => void
   onRequestDelete: (id: string) => void
+  onStartEdit: (comment: Comment) => void
+  onEditTextChange: (value: string) => void
+  onCancelEdit: () => void
+  onSubmitEdit: () => void
 }
 
 function CommentRow({
@@ -68,6 +80,10 @@ function CommentRow({
   currentUserId,
   isAuthenticated,
   canModerate,
+  canEditOwn,
+  isEditing,
+  editText,
+  savingEdit,
   isReplying,
   replyText,
   submitting,
@@ -78,11 +94,32 @@ function CommentRow({
   onSubmitReply,
   onModerate,
   onRequestDelete,
+  onStartEdit,
+  onEditTextChange,
+  onCancelEdit,
+  onSubmitEdit,
 }: CommentRowProps) {
   const authorName = comment.author?.name ?? "Usuario eliminado"
   const isOwner = !!comment.author && currentUserId === comment.author._id
+  const canEdit = isOwner && canEditOwn
   const canDelete = isOwner || canModerate
   const showModerationBadge = canModerate && comment.status !== "approved"
+  const editUnchanged = editText.trim() === comment.content.trim()
+  // Al cerrar, el menu devuelve el foco a su boton; si se eligio "Editar" eso le quitaria el foco al textarea
+  const skipMenuFocusRestore = React.useRef(false)
+  const editRef = React.useRef<HTMLTextAreaElement>(null)
+
+  // autoFocus no sirve aqui: el menu aun tiene atrapado el foco cuando el textarea se monta
+  React.useEffect(() => {
+    if (!isEditing) return
+    const id = window.setTimeout(() => {
+      const el = editRef.current
+      if (!el) return
+      el.focus()
+      el.setSelectionRange(el.value.length, el.value.length)
+    }, 0)
+    return () => window.clearTimeout(id)
+  }, [isEditing])
 
   return (
     <div className={isReply ? "ml-10 border-l border-border pl-4" : ""}>
@@ -92,11 +129,42 @@ function CommentRow({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium">{authorName}</span>
             <span className="text-xs text-muted-foreground">{formatRelativeDate(comment.createdAt)}</span>
+            {comment.editedAt ? (
+              <span className="text-xs text-muted-foreground" title={`Editado ${formatRelativeDate(comment.editedAt)}`}>
+                (editado)
+              </span>
+            ) : null}
             {showModerationBadge ? <CommentStatusBadge status={comment.status} /> : null}
           </div>
-          <p className="mt-1 text-sm break-words whitespace-pre-wrap text-foreground/90">{comment.content}</p>
 
-          <div className="mt-2 flex items-center gap-1">
+          {isEditing ? (
+            <div className="mt-2 flex flex-col gap-2">
+              <Textarea
+                ref={editRef}
+                aria-label="Editar comentario"
+                value={editText}
+                onChange={(e) => onEditTextChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") onCancelEdit()
+                }}
+                rows={3}
+                maxLength={2000}
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={onCancelEdit} disabled={savingEdit}>
+                  Cancelar
+                </Button>
+                <Button size="sm" disabled={savingEdit || !editText.trim() || editUnchanged} onClick={onSubmitEdit}>
+                  {savingEdit ? <Spinner data-icon="inline-start" /> : null}
+                  Guardar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-1 text-sm break-words whitespace-pre-wrap text-foreground/90">{comment.content}</p>
+          )}
+
+          <div className={isEditing ? "hidden" : "mt-2 flex items-center gap-1"}>
             {!isReply && isAuthenticated ? (
               <Button
                 variant="ghost"
@@ -109,14 +177,33 @@ function CommentRow({
               </Button>
             ) : null}
 
-            {canDelete || canModerate ? (
+            {canEdit || canDelete || canModerate ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-sm" className="text-muted-foreground" disabled={busy}>
                     {busy ? <Spinner /> : <MoreVerticalIcon />}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
+                <DropdownMenuContent
+                  align="start"
+                  onCloseAutoFocus={(e) => {
+                    if (skipMenuFocusRestore.current) {
+                      e.preventDefault()
+                      skipMenuFocusRestore.current = false
+                    }
+                  }}
+                >
+                  {canEdit ? (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        skipMenuFocusRestore.current = true
+                        onStartEdit(comment)
+                      }}
+                    >
+                      <PencilIcon data-icon="inline-start" />
+                      Editar
+                    </DropdownMenuItem>
+                  ) : null}
                   {canModerate && comment.status !== "approved" ? (
                     <DropdownMenuItem onClick={() => onModerate(comment._id, "approved")}>
                       <CheckIcon data-icon="inline-start" />
@@ -176,8 +263,12 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
   const [deleting, setDeleting] = React.useState(false)
   const [busyIds, setBusyIds] = React.useState<Set<string>>(new Set())
+  const [editingId, setEditingId] = React.useState<string | null>(null)
+  const [editText, setEditText] = React.useState("")
+  const [savingEdit, setSavingEdit] = React.useState(false)
 
   const canModerate = hasPermission("comments:moderate")
+  const canEditOwn = hasPermission("comments:edit:own")
 
   React.useEffect(() => {
     if (status === "authenticated" && canModerate) {
@@ -225,6 +316,32 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
     }
   }
 
+  function startEdit(comment: Comment) {
+    setReplyTo(null)
+    setEditingId(comment._id)
+    setEditText(comment.content)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditText("")
+  }
+
+  async function submitEdit() {
+    if (!editingId || !editText.trim() || savingEdit) return
+    setSavingEdit(true)
+    try {
+      const updated = await commentsApi.updateComment(fetcher, editingId, editText.trim())
+      setComments((prev) => prev.map((c) => (c._id === updated._id ? updated : c)))
+      cancelEdit()
+      toast.success("Comentario actualizado")
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "No se pudo actualizar el comentario")
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
   async function handleDelete() {
     if (!deleteTarget || deleting) return
     setDeleting(true)
@@ -246,12 +363,19 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
     currentUserId: user?._id,
     isAuthenticated: status === "authenticated",
     canModerate,
+    canEditOwn,
+    editText,
+    savingEdit,
     replyText,
     submitting,
     onReplyTextChange: setReplyText,
     onCancelReply: () => setReplyTo(null),
     onModerate: handleModerate,
     onRequestDelete: setDeleteTarget,
+    onStartEdit: startEdit,
+    onEditTextChange: setEditText,
+    onCancelEdit: cancelEdit,
+    onSubmitEdit: submitEdit,
   }
 
   return (
@@ -307,8 +431,12 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
               <CommentRow
                 comment={comment}
                 busy={busyIds.has(comment._id)}
+                isEditing={editingId === comment._id}
                 isReplying={replyTo === comment._id}
-                onToggleReply={() => setReplyTo(replyTo === comment._id ? null : comment._id)}
+                onToggleReply={() => {
+                  cancelEdit()
+                  setReplyTo(replyTo === comment._id ? null : comment._id)
+                }}
                 onSubmitReply={() => submitComment(replyText, comment._id)}
                 {...commentRowSharedProps}
               />
@@ -317,6 +445,7 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
                   key={reply._id}
                   comment={reply}
                   busy={busyIds.has(reply._id)}
+                  isEditing={editingId === reply._id}
                   isReply
                   isReplying={false}
                   onToggleReply={() => {}}

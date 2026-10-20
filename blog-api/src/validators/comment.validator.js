@@ -12,4 +12,12 @@ const createCommentValidator = [
     .withMessage('parentComment inválido'),
 ];
 
-module.exports = { createCommentValidator };
+const updateCommentValidator = [
+  body('content')
+    .trim()
+    .notEmpty()
+    .withMessage('El comentario no puede estar vacío')
+    .isLength({ max: 2000 }),
+];
+
+module.exports = { createCommentValidator, updateCommentValidator };
